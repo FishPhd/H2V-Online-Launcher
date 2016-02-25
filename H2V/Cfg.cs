@@ -8,20 +8,28 @@ namespace H2V
 {
   internal static class Cfg
   {
-    public static Dictionary<string, string> IniFile = new Dictionary<string, string>();
+    public static Dictionary<string, string> ConfigFile = new Dictionary<string, string>();
 
-    public static void Initial(string error)
+    public static bool Initial()
     {
-      var iniExists = LoadConfigFile("xlive.ini", ref IniFile);
+      var iniExists = LoadConfigFile("xlive.ini", ref ConfigFile);
 
-      if (!iniExists)
+      if (!iniExists) // If no ini make one with these default settings
       {
-        SetVariable("profile name 1 =", "", ref IniFile);
-        SetVariable("profile xuid 1 =", "0000000000000000", ref IniFile);
+        SetVariable("profile name 1 =", "", ref ConfigFile);
+        SetVariable("profile xuid 1 =", "0000000000000000", ref ConfigFile);
       }
 
-      if (!SaveConfigFile("xlive.ini", IniFile))
-        Console.WriteLine(@"Failed to save xlive.ini");
+      /*
+      foreach (var cfgSetting in ConfigFile)
+      {
+        ValueExist(); // Check to see if value exists
+      }
+      */
+      
+      if (!SaveConfigFile("xlive.ini", ConfigFile)) // If cfg doesn't load return false (error)
+        return false;
+      return true;
     }
 
     public static void SetVariable(string varName, string varValue, ref Dictionary<string, string> configDict)
@@ -30,6 +38,11 @@ namespace H2V
         configDict[varName] = varValue;
       else
         configDict.Add(varName, varValue);
+    }
+
+    public static bool CheckIfProcessIsRunning(string nameSubstring)
+    {
+      return Process.GetProcesses().Any(p => p.ProcessName.Contains(nameSubstring));
     }
 
     public static bool SaveConfigFile(string cfgFileName, Dictionary<string, string> configDict)
@@ -61,7 +74,7 @@ namespace H2V
       {
         var splitIdx = line.IndexOf(" ", StringComparison.Ordinal);
         if (splitIdx < 0 || splitIdx + 1 >= line.Length)
-          continue; // Line isn't valid?
+          continue;
         var varName = line.Substring(0, splitIdx);
         var varValue = line.Substring(splitIdx + 1);
 
