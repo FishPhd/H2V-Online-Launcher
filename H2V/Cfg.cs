@@ -15,21 +15,42 @@ namespace H2V
       var iniExists = LoadConfigFile("xlive.ini", ref ConfigFile);
 
       if (!iniExists) // If no ini make one with these default settings
-      {
-        SetVariable("profile name 1 =", "", ref ConfigFile);
-        SetVariable("profile xuid 1 =", "0000000000000000", ref ConfigFile);
-      }
+        DefaultSettings(); // Default settings
+
 
       /*
       foreach (var cfgSetting in ConfigFile)
       {
-        ValueExist(); // Check to see if value exists
+        // Check to see if value exists
+        if(!ValueExist(cfgSetting))
+          SerVariable(dict[defaultValue]); // Grab the default value for that setting and set that value from dictionary (so we aren't nulling the entire cfg)
+      }
+
+      private bool ValueExist()
+      {
+
       }
       */
-      
+
       if (!SaveConfigFile("xlive.ini", ConfigFile)) // If cfg doesn't load return false (error)
-        return false;
+      {
+        // Pretty bad error check
+        File.Delete("xlive.ini");
+        DefaultSettings();
+        return false; //So user can at least check if the files loaded right (doesn't do anything atm)
+      }
       return true;
+    }
+
+    public static void DefaultSettings()
+    {
+      SetVariable("profile name 1 =", "", ref ConfigFile);
+      SetVariable("profile xuid 1 =", "0000000000000000", ref ConfigFile);
+      SetVariable("online profile =", "1", ref ConfigFile);
+      SetVariable("server =", "0", ref ConfigFile);
+      SetVariable("save directory =", "XLiveEmu", ref ConfigFile);
+      SetVariable("debug log =", "1", ref ConfigFile);
+      SaveConfigFile("xlive.ini", ConfigFile);
     }
 
     public static void SetVariable(string varName, string varValue, ref Dictionary<string, string> configDict)
@@ -50,7 +71,8 @@ namespace H2V
       try
       {
         //Grab lines from the dictionary
-        var lines = configDict.Select(kvp => kvp.Key + " \"" + kvp.Value + "\"").ToList();
+        var lines = configDict.Select(kvp => kvp.Key + " " + kvp.Value).ToList();
+        //var lines = configDict.Select(kvp => kvp.Key + " \"" + kvp.Value + "\"").ToList();
 
         //Write all lines to xlive.ini and get out!
         File.WriteAllLines(cfgFileName, lines.ToArray());
@@ -78,12 +100,13 @@ namespace H2V
         var varName = line.Substring(0, splitIdx);
         var varValue = line.Substring(splitIdx + 1);
 
+        /*
         // Remove quotes
         if (varValue.StartsWith("\""))
           varValue = varValue.Substring(1);
         if (varValue.EndsWith("\""))
           varValue = varValue.Substring(0, varValue.Length - 1);
-
+          */
         SetVariable(varName, varValue, ref returnDict);
       }
       return true;

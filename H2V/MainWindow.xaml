@@ -25,20 +25,25 @@
     <StackPanel>
       <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,20,10,0">
         <Label Content="Name: " FontSize="16" />
-        <TextBox controls:TextBoxHelper.Watermark="Name" x:Name="PlayerName" TextChanged="PlayerName_TextChanged" VerticalAlignment="Center" MaxHeight="20" Width="200"/>
+        <TextBox controls:TextBoxHelper.Watermark="Name" x:Name="PlayerName" TextChanged="PlayerName_TextChanged"
+                 VerticalAlignment="Center" MaxHeight="20" Width="200" />
       </StackPanel>
       <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
         <Label Content="UID: " FontSize="16" />
-        <TextBox x:Name="UidBox" Text="3248623492342349" IsReadOnly="True" Margin="16,0,0,0" MaxLength="16" VerticalAlignment="Center" MaxHeight="40" Width="120"/>
-        <Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate" VerticalAlignment="Center" Click="BtnGenerate_Click"
-              controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0" BorderBrush="{x:Null}" FontSize="12" />
+        <TextBox x:Name="UidBox" Text="3248623492342349" IsReadOnly="True" Margin="16,0,0,0" MaxLength="16"
+                 VerticalAlignment="Center" MaxHeight="40" Width="120" />
+        <Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
+                VerticalAlignment="Center" Click="BtnGenerate_Click"
+                controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0"
+                BorderBrush="{x:Null}" FontSize="12" />
       </StackPanel>
 
       <Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnAction" Content="Play"
               controls:ButtonHelper.PreserveTextCase="True" Height="50" Width="150" Click="BtnAction_Click"
-              BorderBrush="{x:Null}" FontSize="16" Margin="0,15,0,0"/>
+              BorderBrush="{x:Null}" FontSize="16" Margin="0,15,0,0" />
     </StackPanel>
-    <controls:MetroProgressBar Foreground="{DynamicResource AccentColorBrush}" Height="15" x:Name="DownloadBar" VerticalAlignment="Bottom" />
+    <controls:MetroProgressBar Foreground="{DynamicResource AccentColorBrush}" Height="15" x:Name="DownloadBar"
+                               VerticalAlignment="Bottom" />
 
   </Grid>
 </controls:MetroWindow>
