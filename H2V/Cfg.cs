@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace H2V
+namespace h2online
 {
   internal static class Cfg
   {
@@ -17,7 +17,7 @@ namespace H2V
       if (!iniExists) // If no ini make one with these default settings
         DefaultSettings(); // Default settings
 
-
+   
       /*
       foreach (var cfgSetting in ConfigFile)
       {
@@ -86,6 +86,8 @@ namespace H2V
 
     private static bool LoadConfigFile(string cfgFileName, ref Dictionary<string, string> returnDict)
     {
+      Console.WriteLine("start");
+
       if (returnDict == null) throw new ArgumentNullException(nameof(returnDict));
 
       if (!File.Exists(cfgFileName))
@@ -94,19 +96,14 @@ namespace H2V
       var lines = File.ReadAllLines(cfgFileName);
       foreach (var line in lines)
       {
-        var splitIdx = line.IndexOf(" ", StringComparison.Ordinal);
+        int splitIdx = line.IndexOf("=", StringComparison.Ordinal) + 1; // Add one so we include the =
+
         if (splitIdx < 0 || splitIdx + 1 >= line.Length)
           continue;
-        var varName = line.Substring(0, splitIdx);
-        var varValue = line.Substring(splitIdx + 1);
 
-        /*
-        // Remove quotes
-        if (varValue.StartsWith("\""))
-          varValue = varValue.Substring(1);
-        if (varValue.EndsWith("\""))
-          varValue = varValue.Substring(0, varValue.Length - 1);
-          */
+        string varName = line.Substring(0, splitIdx);
+        string varValue = line.Substring(splitIdx + 1);
+
         SetVariable(varName, varValue, ref returnDict);
       }
       return true;
