@@ -11,7 +11,7 @@
   <controls:MetroWindow.LeftWindowCommands>
     <controls:WindowCommands>
       <Button x:Name="Icon" ToolTip="H2V Online" Click="Icon_Click">
-        <Rectangle Width="15" Height="15"
+        <Rectangle Width="30" Height="30"
                    Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
           <Rectangle.OpacityMask>
             <VisualBrush Stretch="Uniform"
@@ -31,11 +31,11 @@
       <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
         <Label Content="UID: " FontSize="16" />
         <TextBox x:Name="UidBox" Text="3248623492342349" IsReadOnly="True" Margin="16,0,0,0" MaxLength="16"
-                 VerticalAlignment="Center" MaxHeight="40" Width="120" />
-        <Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
+                 VerticalAlignment="Center" MaxHeight="40" Width="200" IsEnabled="false" BorderBrush="#FF6E6E6E" />
+        <!--<Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
                 VerticalAlignment="Center" Click="BtnGenerate_Click"
                 controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0"
-                BorderBrush="{x:Null}" FontSize="12" />
+                BorderBrush="{x:Null}" FontSize="12" />-->
       </StackPanel>
 
       <Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnAction" Content="Play"

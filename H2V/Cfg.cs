@@ -12,44 +12,40 @@ namespace h2online
 
     public static bool Initial()
     {
-      var iniExists = LoadConfigFile("xlive.ini", ref ConfigFile);
+      bool iniExists = LoadConfigFile("xlive.ini", ref ConfigFile);
 
       if (!iniExists) // If no ini make one with these default settings
         DefaultSettings(); // Default settings
 
-   
       /*
-      foreach (var cfgSetting in ConfigFile)
+      foreach (var cfgSetting in ConfigFile) TODO: Implement this
       {
-        // Check to see if value exists
-        if(!ValueExist(cfgSetting))
-          SerVariable(dict[defaultValue]); // Grab the default value for that setting and set that value from dictionary (so we aren't nulling the entire cfg)
-      }
-
-      private bool ValueExist()
-      {
-
+        if(!ValueExist(cfgSetting)) // Check to see if value exists
+          SerVariable(dict[defaultValue]); // Grab and set value from default dict (no nulling entire cfg)
       }
       */
 
       if (!SaveConfigFile("xlive.ini", ConfigFile)) // If cfg doesn't load return false (error)
       {
-        // Pretty bad error check
-        File.Delete("xlive.ini");
-        DefaultSettings();
+        File.Delete("xlive.ini");// Pretty bad error check
+        DefaultSettings(); // Default the settings
         return false; //So user can at least check if the files loaded right (doesn't do anything atm)
       }
-      return true;
+      return true; // All good!
     }
+
+    //private bool ValueExist(){}
+    //private void SaveValue(){}
 
     public static void DefaultSettings()
     {
-      SetVariable("profile name 1 =", "", ref ConfigFile);
+      SetVariable("profile name 1 =", " ", ref ConfigFile);
       SetVariable("profile xuid 1 =", "0000000000000000", ref ConfigFile);
       SetVariable("online profile =", "1", ref ConfigFile);
       SetVariable("server =", "0", ref ConfigFile);
       SetVariable("save directory =", "XLiveEmu", ref ConfigFile);
       SetVariable("debug log =", "1", ref ConfigFile);
+      SetVariable("altports =", "0", ref ConfigFile);
       SaveConfigFile("xlive.ini", ConfigFile);
     }
 
@@ -70,12 +66,9 @@ namespace h2online
     {
       try
       {
-        //Grab lines from the dictionary
-        var lines = configDict.Select(kvp => kvp.Key + " " + kvp.Value).ToList();
-        //var lines = configDict.Select(kvp => kvp.Key + " \"" + kvp.Value + "\"").ToList();
+        var lines = configDict.Select(kvp => kvp.Key + " " + kvp.Value).ToList(); //Grab lines from the dictionary
+        File.WriteAllLines(cfgFileName, lines.ToArray()); //Write all lines to xlive.ini and get out!
 
-        //Write all lines to xlive.ini and get out!
-        File.WriteAllLines(cfgFileName, lines.ToArray());
         return true;
       }
       catch
@@ -86,25 +79,20 @@ namespace h2online
 
     private static bool LoadConfigFile(string cfgFileName, ref Dictionary<string, string> returnDict)
     {
-      Console.WriteLine("start");
-
-      if (returnDict == null) throw new ArgumentNullException(nameof(returnDict));
-
-      if (!File.Exists(cfgFileName))
+      if (returnDict == null || !File.Exists(cfgFileName)) // If cfg file doesn't exist or dict is null
         return false;
 
-      var lines = File.ReadAllLines(cfgFileName);
-      foreach (var line in lines)
+      foreach (string line in File.ReadAllLines(cfgFileName)) // For each line in the cfg
       {
-        int splitIdx = line.IndexOf("=", StringComparison.Ordinal) + 1; // Add one so we include the =
+        int splitIdx = line.IndexOf("=", StringComparison.Ordinal) + 1; // + 1 so we include the =
 
-        if (splitIdx < 0 || splitIdx + 1 >= line.Length)
+        if (splitIdx < 0 || splitIdx + 1 >= line.Length) // Makes sure the index is correct
           continue;
 
-        string varName = line.Substring(0, splitIdx);
-        string varValue = line.Substring(splitIdx + 1);
+        string varName = line.Substring(0, splitIdx); // 0 to the end of variable name
+        string varValue = line.Substring(splitIdx + 1); // end of variable name + 1
 
-        SetVariable(varName, varValue, ref returnDict);
+        SetVariable(varName, varValue, ref returnDict); // Set the variable 
       }
       return true;
     }
