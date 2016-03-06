@@ -12,7 +12,7 @@ namespace h2online
 
     public static bool Initial()
     {
-      bool iniExists = LoadConfigFile("xlive.ini", ref ConfigFile);
+      var iniExists = LoadConfigFile("xlive.ini", ref ConfigFile);
 
       if (!iniExists) // If no ini make one with these default settings
         DefaultSettings(); // Default settings
@@ -27,9 +27,9 @@ namespace h2online
 
       if (!SaveConfigFile("xlive.ini", ConfigFile)) // If cfg doesn't load return false (error)
       {
-        File.Delete("xlive.ini");// Pretty bad error check
+        File.Delete("xlive.ini"); // Pretty bad error check
         DefaultSettings(); // Default the settings
-        return false; //So user can at least check if the files loaded right (doesn't do anything atm)
+        return false; //So user can at least check if the files loaded right
       }
       return true; // All good!
     }
@@ -69,11 +69,11 @@ namespace h2online
         var lines = configDict.Select(kvp => kvp.Key + " " + kvp.Value).ToList(); //Grab lines from the dictionary
         File.WriteAllLines(cfgFileName, lines.ToArray()); //Write all lines to xlive.ini and get out!
 
-        return true;
+        return true; // Config file saved
       }
       catch
       {
-        return false;
+        return false; // Config file not saved
       }
     }
 
@@ -82,15 +82,15 @@ namespace h2online
       if (returnDict == null || !File.Exists(cfgFileName)) // If cfg file doesn't exist or dict is null
         return false;
 
-      foreach (string line in File.ReadAllLines(cfgFileName)) // For each line in the cfg
+      foreach (var line in File.ReadAllLines(cfgFileName)) // For each line in the cfg
       {
-        int splitIdx = line.IndexOf("=", StringComparison.Ordinal) + 1; // + 1 so we include the =
+        var splitIdx = line.IndexOf("=", StringComparison.Ordinal) + 1; // + 1 so we include the =
 
         if (splitIdx < 0 || splitIdx + 1 >= line.Length) // Makes sure the index is correct
           continue;
 
-        string varName = line.Substring(0, splitIdx); // 0 to the end of variable name
-        string varValue = line.Substring(splitIdx + 1); // end of variable name + 1
+        var varName = line.Substring(0, splitIdx); // 0 to the end of variable name
+        var varValue = line.Substring(splitIdx + 1); // end of variable name + 1
 
         SetVariable(varName, varValue, ref returnDict); // Set the variable 
       }

@@ -31,7 +31,8 @@
       <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
         <Label Content="UID: " FontSize="16" />
         <TextBox x:Name="UidBox" Text="3248623492342349" IsReadOnly="True" Margin="16,0,0,0" MaxLength="16"
-                 VerticalAlignment="Center" MaxHeight="40" Width="200" IsEnabled="false" BorderBrush="#FF6E6E6E" />
+                 VerticalAlignment="Center" MaxHeight="40" Width="200" BorderBrush="#FF303030" Background="#FFA6A6A6"
+                 CaretBrush="#FFB0B0B0" Foreground="White" />
         <!--<Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
                 VerticalAlignment="Center" Click="BtnGenerate_Click"
                 controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0"
