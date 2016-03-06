@@ -134,13 +134,13 @@ namespace h2online
         if (_launcherUpdated) // If the launcher was updated we need to restart
         {
           BtnAction.Content = "Restart";
-          Trace.WriteLine(@"Launcher update to" + _latestLauncherVersion + "complete");
+          Trace.WriteLine(@"Launcher update to " + _latestLauncherVersion + " complete");
         }
         else
         {
           BtnAction.Content = "Play";
         }
-        Trace.WriteLine(@"H2vonline update to" + _latestVersion + "complete");
+        Trace.WriteLine(@"H2vonline update to " + _latestVersion + " complete");
       }
     }
 
