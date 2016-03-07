@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -11,99 +12,82 @@ namespace h2online
 {
   public partial class MainWindow
   {
-    // All your variables and constants so you can easily swap this out when the servers undoubtably change
-    private const string _debugFileName = "debug.log";
+    // Constants
+    private const string DebugFileName = "h2vlauncher.log"; // The launchers debug log output
+    private const string Url = "http://www.h2v.online/";
+    private const string UpdateServer = "https://github.com/FishPhd/H2V-Online-Launcher/releases/download/0.0.0.0/"; // Yes its ugly
 
-    private const string Url = "https://github.com/FishPhd/H2V-Online-Launcher/releases/download/0.0.0.0/";
-      // Yes its ugly
-
-    private int _fileCount; // Files that 
+    // Variables
+    private static readonly Dictionary<string, int> FilesDict = new Dictionary<string, int>(); // Dictionary with files and their positions
+    private int _fileCount; // # of files to download
     private string _latestLauncherVersion; // the latest version of the launcher
     private string _latestVersion; // the latest version of h2vonline
-    private bool _launcherUpdated; // Was the launcher updated during this run
     private string _localLauncherVersion; // the version of current launcher
     private string _localVersion; // version of the current h2vonline
-
-    //Fires when the app opens (look at window_loaded event for finer tuning)
-    public MainWindow()
+ 
+    public MainWindow() // Fire to start app opens (look at window_loaded event for finer tuning)
     {
       InitiateTrace(); // Starts our console/debug trace
+
       try
       {
-        InitializeComponent();
+        InitializeComponent(); // Try to load our pretty wpf
       }
       catch
       {
-        Trace.WriteLine(@"Failed to load .Net components. Please make sure you have .Net 4.5.2 installed");
+        Trace.WriteLine("Failed to load .Net components. Please make sure you have .Net 4.5.2 installed");
       }
+
+      // Grabs our config file settings or defaults them if error
       Trace.WriteLine(Cfg.Initial() ? @"Config loaded" : @"Config Defaulted");
-        // Grabs our config file settings or defaults them if error
-      Load(); // Loads all the settings from the cfg and sets the controls to them TODO: Databind this
-      BtnAction.Content = !CheckVersion() ? "Update" : "Play";
-        // If our version check doesn't go through then we use button text as handler for update
+      Load(); // Loads all the settings from the cfg and sets the controls to them 
+      BtnAction.Content = !CheckVersion() ? "Update" : "Play"; // Check version and change main button depending
     }
 
     private void InitiateTrace()
     {
-      File.Delete(_debugFileName); // Delete the debug.log so that we get a fresh one every launch
-      Trace.WriteLine(@"Deleted " + _debugFileName);
+      File.Delete(DebugFileName); // Delete the debug.log so that we get a fresh one every launch
+      Trace.WriteLine("Created " + DebugFileName); // Our debug file was "created" c:<
+      Trace.Listeners.Clear(); // Clear any listeners
 
-      Trace.Listeners.Clear(); // Clear (in case called multiple times)
-      //string dir = AppDomain.CurrentDomain.BaseDirectory;
-      var twtl = new TextWriterTraceListener("debug.log") // Our new textwriter
+      TextWriterTraceListener twtl = new TextWriterTraceListener(DebugFileName) // Construct our new
       {
-        Name = "TextLogger",
-        TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.Timestamp | TraceOptions.DateTime
+        Name = "DebugTrace",
+        TraceOutputOptions = TraceOptions.Timestamp // use Trace.TraceXXX for timestamp on the output
       };
-      var ctl = new ConsoleTraceListener(true) {TraceOutputOptions = TraceOptions.Timestamp | TraceOptions.DateTime};
-      Trace.Listeners.Add(twtl);
-      Trace.Listeners.Add(ctl);
-      Trace.AutoFlush = true;
+      ConsoleTraceListener ctl = new ConsoleTraceListener { TraceOutputOptions = TraceOptions.Timestamp };
+      Trace.Listeners.Add(twtl); // Add our TWTL
+      Trace.Listeners.Add(ctl); // Add our CTL
+      Trace.AutoFlush = true; // Automaitcally flushes data to output on write
     }
 
-    private void Load()
+    private void Load() // TODO: Databind this
     {
+      // If uid is default generate a new one
       if (Cfg.ConfigFile["profile xuid 1 ="] == "0000000000000000" || Cfg.ConfigFile["profile xuid 1 ="] == "")
-        // If uid is default generate a new one
       {
-        UidBox.Text = GenerateUid().ToString(); //Update text box with uid from generate
+        UidBox.Text = Auth.GenerateUid().ToString(); //Update text box with uid from generate
         Cfg.SetVariable("profile xuid 1 =", UidBox.Text, ref Cfg.ConfigFile);
         Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
       }
 
+      // Set textbox to blank (for watermark) TODO: Halo 2 names
       PlayerName.Text = Cfg.ConfigFile["profile name 1 ="] == " " ? "" : Cfg.ConfigFile["profile name 1 ="];
-        // Set textbox to blank (for watermark) TODO: Halo 2 names
-      UidBox.Text = Cfg.ConfigFile["profile xuid 1 ="];
+      UidBox.Text = Cfg.ConfigFile["profile xuid 1 ="]; // Uid box text from cfg
+      Trace.WriteLine("UID: " + UidBox.Text); // Write UID
+      Trace.WriteLine("Name: " + PlayerName.Text); // Write Name
     }
-
-    private long GenerateUid()
-    {
-      //Generate two ints and then append them to create our 16 digit long uid
-      var rnd = new Random();
-      var uid1 = rnd.Next(10000000, 100000000);
-      var uid2 = rnd.Next(10000000, 100000000);
-      return Convert.ToInt64($"{uid1}{uid2}"); // Return the complete uid
-    }
-
-    /*
-    private bool CheckUid(long uid)
-    {
-      // This will check to see if the uid is taken (will need some database stuff setup)
-      if (uid != null)
-        return true;
-      return false;
-    }
-    */
 
     private void DownloadFile(string fileUrl, string fileName, bool downloadProgress = true)
     {
-      _fileCount++; // New file to download
-
+      _fileCount++; // One more file to download
+      FilesDict.Add(fileName, _fileCount); // Add this file at this count to our dictionary
+      Trace.WriteLine("File "+ _fileCount + ": " + fileName);
 
       File.Delete(fileName); // It may or may not delete File.Delete does not throw exceptions if a file is not found
-      Trace.WriteLine(@"Deleted " + fileName);
+      //Trace.WriteLine("Deleted " + fileName);
 
-      Trace.WriteLine(@"Starting download for " + fileName + @" from " + fileUrl);
+      Trace.WriteLine("Starting download for " + fileName + " from " + fileUrl);
 
       try
       {
@@ -114,39 +98,46 @@ namespace h2online
 
           wc.DownloadFileCompleted += wc_DownloadComplete; // This file has finished downloading
           wc.DownloadFileAsync(new Uri(fileUrl), fileName, fileName); // Async downloads our file overload is filename
-
         }
       }
       catch (Exception)
       {
-        Trace.WriteLine(@"Failed to download File: " + fileName);
+        Trace.WriteLine("Failed to download File: " + fileName);
       }
     }
 
     private void wc_DownloadComplete(object sender, AsyncCompletedEventArgs e)
     {
       _fileCount--; // 1 less file to download
-      var filename = (string) e.UserState; // Name of file from user token in async
-      Trace.WriteLine(@"Downloaded " + filename + " Files left: " + _fileCount);
+      string filename = (string) e.UserState; // Name of file from user token in async
+      Trace.WriteLine("Downloaded " + filename + " File number: " + FilesDict[filename] + " Files left: " + _fileCount);
 
       if (_fileCount == 0) // No more files to download
       {
-        if (_launcherUpdated) // If the launcher was updated we need to restart
+        if (FilesDict.ContainsKey("h2online.exe") && _localVersion != _latestVersion) // If the launcher was updated we need to restart
         {
           BtnAction.Content = "Restart";
-          Trace.WriteLine(@"Launcher update to " + _latestLauncherVersion + " complete");
+          Trace.WriteLine("Launcher update to " + _latestLauncherVersion + " complete");
+          Trace.WriteLine("H2vonline update to " + _latestVersion + " complete");
+        }
+        else if (FilesDict.ContainsKey("h2online.exe"))
+        {
+          BtnAction.Content = "Restart";
+          Trace.WriteLine("Launcher update to " + _latestLauncherVersion + " complete");
+          Trace.WriteLine("Please restart the launcher");
         }
         else
-        {
           BtnAction.Content = "Play";
-        }
-        Trace.WriteLine(@"H2vonline update to " + _latestVersion + " complete");
       }
     }
 
     private void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
     {
       DownloadBar.Value = e.ProgressPercentage; // Updates our download bar percentage
+      /*
+      if (e.ProgressPercentage != 100 && e.ProgressPercentage % 2 != 0)
+        Trace.Write(e.ProgressPercentage + " ");
+        */
     }
 
     private void KillProcess(string name)
@@ -155,6 +146,7 @@ namespace h2online
       {
         process.Kill(); // Kill it. Hard
         process.WaitForExit(); // Wait for process to end in case we want to do stuff with active files
+        Trace.WriteLine(name + " process killed");
       }
     }
 
@@ -163,7 +155,7 @@ namespace h2online
       BtnAction.Content = "Checking Version..."; // So people know what its doing
 
       //Grab version number from the URL constant
-      var versionLines = new WebClient().DownloadString(Url + "version.txt")
+      string[] versionLines = new WebClient().DownloadString(UpdateServer + "version.txt")
         .Split(new[] {"\r\n", "\n"}, StringSplitOptions.None);
 
       _latestVersion = versionLines[0]; // Latest h2vonline version from line 1 of version.txt
@@ -214,25 +206,29 @@ namespace h2online
         KillProcess("halo2"); // Kills Halo 2 before updating TODO: add dialog before closing
         BtnAction.Content = "Updating..."; // Button is still enabled if download is long it might look strange
 
+        // TODO: Implement a filelist.txt on server so we can grab needed files (append build number to only grab latest)
         if (!File.Exists("MF.dll")) // If we don't find mf.dll
-          DownloadFile(Url + "MF.dll", "MF.dll");
+          DownloadFile(UpdateServer + "MF.dll", "MF.dll");
+
+        /* TODO: Implement latest Halo 2 update patch probably with exe version check
+        if (!File.Exists("halo2update.exe")) // If we don't find mf.dll
+          DownloadFile(UpdateServer + "halo2update.exe", "halo2update.exe");
+          */
 
         if (!File.Exists("gungame.ini")) // If we don't find gungame.ini
-          DownloadFile(Url + "gungame.ini", "gungame.ini");
+          DownloadFile(UpdateServer + "gungame.ini", "gungame.ini");
 
         if (_localVersion != _latestVersion) // If our xlive.dll is old update it
-          DownloadFile(Url + "xlive.dll", "xlive.dll");
+          DownloadFile(UpdateServer + "xlive.dll", "xlive.dll");
 
         if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-        {
-          DownloadFile(Url + "h2online.exe", "h2online.exe");
-          _launcherUpdated = true; // Launcher was updated we will need to restart
-        }
+          DownloadFile(UpdateServer + "h2online.exe", "h2online.exe");
 
-        Trace.WriteLine(@"Files Needed: " + _fileCount);
+        //Trace.WriteLine("Files Needed: " + _fileCount);
       }
       else if ((string) BtnAction.Content == "Restart") // Restart
       {
+        Trace.WriteLine("Application restarting");
         Process.Start(Application.ResourceAssembly.Location);
         Application.Current.Shutdown();
       }
@@ -240,22 +236,24 @@ namespace h2online
         Process.Start("halo2.exe"); // Good to go! (may need target parameters later)
     }
 
-    /*
-    private void BtnGenerate_Click(object sender, RoutedEventArgs e)
+    private void CboxHosting_Changed(object sender, RoutedEventArgs e)
     {
       if (!IsLoaded) // Don't update cfg while the control loads
         return;
 
-      //long uid = new long(); //Here for when while loop is active
-
-      //while (!CheckUid(uid))
-      //loop here until uid is found that isn't taken
-      UidBox.Text = GenerateUid().ToString(); //Update text box with uid from generate
-
-      //Update uid value in cfg
-      Cfg.SetVariable("profile xuid 1 =", UidBox.Text, ref Cfg.ConfigFile);
+      // Bools convert "nicely" to 0s and 1s :)
+      Cfg.SetVariable("server =", Convert.ToString(Convert.ToInt32(CboxHosting.IsChecked)), ref Cfg.ConfigFile);
       Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
     }
-    */
+
+    private void CboxDebug_Changed(object sender, RoutedEventArgs e)
+    {
+      if (!IsLoaded) // Don't update cfg while the control loads
+        return;
+
+      // Bools convert "nicely" to 0s and 1s :)
+      Cfg.SetVariable("debug =", Convert.ToString(Convert.ToInt32(CboxDebug.IsChecked)), ref Cfg.ConfigFile);
+      Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
+    }
   }
 }
