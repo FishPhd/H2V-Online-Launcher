@@ -39,7 +39,7 @@ namespace h2online
 
     public static void DefaultSettings()
     {
-      SetVariable("profile name 1 =", " ", ref ConfigFile);
+      SetVariable("profile name 1 =", "Player", ref ConfigFile);
       SetVariable("profile xuid 1 =", "0000000000000000", ref ConfigFile);
       SetVariable("online profile =", "1", ref ConfigFile);
       SetVariable("server =", "0", ref ConfigFile);
