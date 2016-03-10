@@ -9,7 +9,7 @@
   TextElement.Foreground="{DynamicResource MaterialDesignBody}"
   Background="{DynamicResource MaterialDesignPaper}"
   FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-  xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+  xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls" Topmost="True"
   mc:Ignorable="d" AllowsTransparency="True" WindowStartupLocation="CenterScreen"
   Title="H2V: Online" Height="260" Width="300" Activated="MetroWindow_Activated">
   <controls:MetroWindow.LeftWindowCommands>
