@@ -13,23 +13,21 @@ namespace h2online
   public partial class MainWindow
   {
     // TODO: Add in dsfix or some fps limiter
-    // TODO: Add in fov and dsfix
+    // TODO: Add in fov
+    // TODO: Remove the "=" from the dictionary in cfg -_-
 
     // Constants
     private const string DebugFileName = "h2vlauncher.log"; // The launchers debug log output
-    private const string Url = "http://www.h2v.online/";
+    private const string MainWebsite = "http://www.h2v.online/"; // The project website
 
+    // Yes its ugly
     private const string UpdateServer = "https://github.com/FishPhd/H2V-Online-Launcher/releases/download/0.0.0.0/";
-      // Yes its ugly
-
-    private const string LatestHalo2Version = "1.00.00.11122";
+    private const string LatestHalo2Version = "1.00.00.11122"; // Lateset Halo 2 vista version
 
     // Variables
-    private static readonly Dictionary<string, int> FilesDict = new Dictionary<string, int>();
-      // Dictionary with files and their positions
-
+    private static readonly Dictionary<string, int> FilesDict = new Dictionary<string, int>(); // Dictionary with files and their positions
     private int _fileCount; // # of files to download
-    private string _halo2Version = "1.00.00.11122";
+    private string _halo2Version = "1.00.00.11122"; // Just assume everyone is up to date unless stated otherwise
     private string _latestLauncherVersion; // the latest version of the launcher
     private string _latestVersion; // the latest version of h2vonline
     private string _localLauncherVersion; // the version of current launcher
@@ -80,7 +78,7 @@ namespace h2online
         Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
       }
 
-      // Set textbox to blank (for watermark) TODO: Halo 2 names
+      // Set textbox to "Player" for numbering TODO: Halo 2 names
       try
       {
         PlayerName.Text = Cfg.ConfigFile["profile name 1 ="] == " " ? "Player" : Cfg.ConfigFile["profile name 1 ="];
@@ -91,9 +89,11 @@ namespace h2online
         Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
         PlayerName.Text = Cfg.ConfigFile["profile name 1 ="];
       }
+      CboxDebug.IsChecked = Convert.ToBoolean(Convert.ToInt32(Cfg.ConfigFile["debug ="]));
       UidBox.Text = Cfg.ConfigFile["profile xuid 1 ="]; // Uid box text from cfg
       Trace.WriteLine("UID: " + UidBox.Text); // Write UID
       Trace.WriteLine("Name: " + PlayerName.Text); // Write Name
+      Trace.WriteLine("Debug: " + CboxDebug.IsChecked); // Write debug selection
     }
 
     private void DownloadFile(string fileUrl, string fileName, bool downloadProgress = true)
@@ -152,8 +152,8 @@ namespace h2online
           }
         }
 
+        // If the launcher was updated we need to restart
         if (FilesDict.ContainsKey("h2online.exe") && _localVersion != _latestVersion)
-          // If the launcher was updated we need to restart
         {
           ButtonAction.Content = "Restart";
           Trace.WriteLine("Launcher update to " + _latestLauncherVersion + " complete");
@@ -228,10 +228,7 @@ namespace h2online
       if (_localVersion != _latestVersion || _latestLauncherVersion != _localLauncherVersion || !File.Exists("MF.dll") ||
           !File.Exists("gungame.ini") || _halo2Version != LatestHalo2Version)
       {
-        if (_halo2Version == "0.0.0.0")
-          Trace.WriteLine("Cannot locate halo2.exe");
-        else
-          Trace.WriteLine("You don't have the latest version!");
+        Trace.WriteLine(_halo2Version == "0.0.0.0" ? "Cannot locate halo2.exe" : "You don't have the latest version!");
         return false;
       }
       TextboxOutput.Text = "You have the latest version!";
@@ -250,12 +247,32 @@ namespace h2online
 
     private void Icon_Click(object sender, RoutedEventArgs e)
     {
-      Process.Start(Url); // Opens the website :)
+      Process.Start(MainWebsite); // Opens the website :)
     }
 
     private void ButtonAction_Click(object sender, RoutedEventArgs e)
     {
-      if ((string) ButtonAction.Content == "Update")
+      if ((string)ButtonAction.Content == "Play")
+      {
+        try
+        {
+          if (Cfg.CheckIfProcessIsRunning("halo2")) // Kill halo2 if its running (Should help with black screens)
+            KillProcess("halo2");
+          Process.Start("halo2.exe"); // Good to go! (may need target parameters later)
+        }
+        catch
+        {
+          Trace.WriteLine("Could not locate/open Halo2.exe");
+          TextboxOutput.Text = "Could not locate/open Halo2.exe";
+        }
+      }
+      else if ((string)ButtonAction.Content == "Close Game") // Game is open
+      {
+        if (Cfg.CheckIfProcessIsRunning("halo2")) // Might be redundant but we don't want crashes
+          KillProcess("halo2");
+        ButtonAction.Content = "Play";
+      }
+      else if ((string) ButtonAction.Content == "Update")
       {
         KillProcess("halo2"); // Kills Halo 2 before updating TODO: add dialog before closing
         ButtonAction.Content = "Updating..."; // Button is still enabled if download is long it might look strange
@@ -264,8 +281,7 @@ namespace h2online
         if (!File.Exists("MF.dll")) // If we don't find mf.dll
           DownloadFile(UpdateServer + "MF.dll", "MF.dll");
 
-        // TODO: Implement latest Halo 2 update patch probably with exe version check
-        if (!File.Exists("h2Update.exe") && _halo2Version != LatestHalo2Version) // If we don't find this file
+        if (!File.Exists("h2Update.exe") && _halo2Version != LatestHalo2Version) // If halo2 needs an update
           DownloadFile(UpdateServer + "h2Update.exe", "h2Update.exe");
 
         if (!File.Exists("gungame.ini")) // If we don't find gungame.ini
@@ -285,29 +301,11 @@ namespace h2online
         Process.Start(Application.ResourceAssembly.Location);
         Application.Current.Shutdown();
       }
-      else if ((string) ButtonAction.Content == "Play")
-      {
-        try
-        {
-          Process.Start("halo2.exe"); // Good to go! (may need target parameters later)
-        }
-        catch
-        {
-          Trace.WriteLine("Could not locate/open Halo2.exe");
-          TextboxOutput.Text = "Could not locate/open Halo2.exe";
-        }
-      }
     }
 
-    /* TODO: Add this back in when its fixed
-    private void CboxHosting_Changed(object sender, RoutedEventArgs e)
+    private void MetroWindow_Activated(object sender, EventArgs e)
     {
-      if (!IsLoaded) // Don't update cfg while the control loads
-        return;
-
-      // Bools convert "nicely" to 0s and 1s :)
-      Cfg.SetVariable("server =", Convert.ToString(Convert.ToInt32(CboxHosting.IsChecked)), ref Cfg.ConfigFile);
-      Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
+      ButtonAction.Content = Cfg.CheckIfProcessIsRunning("halo2") ? "Close Game" : "Play"; // Check if halo 2 is running
     }
 
     private void CboxDebug_Changed(object sender, RoutedEventArgs e)
@@ -317,6 +315,17 @@ namespace h2online
 
       // Bools convert "nicely" to 0s and 1s :)
       Cfg.SetVariable("debug =", Convert.ToString(Convert.ToInt32(CboxDebug.IsChecked)), ref Cfg.ConfigFile);
+      Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
+    }
+
+    /*
+    private void CboxHosting_Changed(object sender, RoutedEventArgs e)
+    {
+      if (!IsLoaded) // Don't update cfg while the control loads
+        return;
+
+      // Bools convert "nicely" to 0s and 1s :)
+      Cfg.SetVariable("server =", Convert.ToString(Convert.ToInt32(CboxHosting.IsChecked)), ref Cfg.ConfigFile);
       Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
     }
     */

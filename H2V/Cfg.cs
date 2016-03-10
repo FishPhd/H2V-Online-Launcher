@@ -44,7 +44,7 @@ namespace h2online
       SetVariable("online profile =", "1", ref ConfigFile);
       SetVariable("server =", "0", ref ConfigFile);
       SetVariable("save directory =", "XLiveEmu", ref ConfigFile);
-      SetVariable("debug log =", "1", ref ConfigFile);
+      SetVariable("debug log =", "0", ref ConfigFile);
       SetVariable("debug =", "0", ref ConfigFile);
       SetVariable("altports =", "0", ref ConfigFile);
       SaveConfigFile("xlive.ini", ConfigFile);
