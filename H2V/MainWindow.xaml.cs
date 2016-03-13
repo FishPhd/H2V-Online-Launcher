@@ -45,10 +45,15 @@ namespace h2online
       {
         Trace.WriteLine("Failed to load .Net components. Please make sure you have .Net 4.5.2 installed");
       }
-
-      // Grabs our config file settings or defaults them if error
-      Trace.WriteLine(Cfg.Initial() ? @"Config loaded" : @"Config Defaulted");
-      Load(); // Loads all the settings from the cfg and sets the controls to them 
+      Trace.WriteLine(Cfg.Initial() ? @"Config loaded" : @"Config Defaulted"); // Grabs settings or defaults them
+      if (Load())
+        Trace.WriteLine("Config values loaded");
+      else
+      {
+        Cfg.DefaultSettings();
+        Load();
+        Trace.WriteLine("Config values failed to load. Resetting...");
+      }
       ButtonAction.Content = !CheckVersion() ? "Update" : "Play"; // Check version and change main button depending
     }
 
@@ -68,32 +73,32 @@ namespace h2online
       Trace.AutoFlush = true; // Automaitcally flushes data to output on write
     }
 
-    private void Load() // TODO: Databind this
+    private bool Load() // TODO: Databind this
     {
-      // If uid is default generate a new one
-      if (Cfg.ConfigFile["profile xuid 1 ="] == "0000000000000000" || Cfg.ConfigFile["profile xuid 1 ="] == "")
-      {
-        UidBox.Text = Auth.GenerateUid().ToString(); //Update text box with uid from generate
-        Cfg.SetVariable("profile xuid 1 =", UidBox.Text, ref Cfg.ConfigFile);
-        Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
-      }
-
-      // Set textbox to "Player" for numbering TODO: Halo 2 names
       try
       {
+        // If uid is default generate a new one
+        if (Cfg.ConfigFile["profile xuid 1 ="] == "0000000000000000" || Cfg.ConfigFile["profile xuid 1 ="] == "")
+        {
+          UidBox.Text = Auth.GenerateUid().ToString(); //Update text box with uid from generate
+          Cfg.SetVariable("profile xuid 1 =", UidBox.Text, ref Cfg.ConfigFile);
+          Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
+        }
+
+        // Set textbox to "Player" for numbering TODO: Halo 2 names
         PlayerName.Text = Cfg.ConfigFile["profile name 1 ="] == " " ? "Player" : Cfg.ConfigFile["profile name 1 ="];
+
+        CboxDebug.IsChecked = Convert.ToBoolean(Convert.ToInt32(Cfg.ConfigFile["debug ="]));
+        UidBox.Text = Cfg.ConfigFile["profile xuid 1 ="]; // Uid box text from cfg
+        Trace.WriteLine("UID: " + UidBox.Text); // Write UID
+        Trace.WriteLine("Name: " + PlayerName.Text); // Write Name
+        Trace.WriteLine("Debug: " + CboxDebug.IsChecked); // Write debug selection
+        return true;
       }
       catch
       {
-        Cfg.SetVariable("profile name 1 =", "Player", ref Cfg.ConfigFile);
-        Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
-        PlayerName.Text = Cfg.ConfigFile["profile name 1 ="];
+        return false;
       }
-      CboxDebug.IsChecked = Convert.ToBoolean(Convert.ToInt32(Cfg.ConfigFile["debug ="]));
-      UidBox.Text = Cfg.ConfigFile["profile xuid 1 ="]; // Uid box text from cfg
-      Trace.WriteLine("UID: " + UidBox.Text); // Write UID
-      Trace.WriteLine("Name: " + PlayerName.Text); // Write Name
-      Trace.WriteLine("Debug: " + CboxDebug.IsChecked); // Write debug selection
     }
 
     private void DownloadFile(string fileUrl, string fileName, bool downloadProgress = true)
@@ -158,7 +163,7 @@ namespace h2online
           ButtonAction.Content = "Restart";
           Trace.WriteLine("Launcher update to " + _latestLauncherVersion + " complete");
           Trace.WriteLine("H2vonline update to " + _latestVersion + " complete");
-          TextboxOutput.Text = "Launcher and H2vonline update complete! Please restart.";
+          TextboxOutput.Text = "Update complete! Please restart.";
         }
         else if (FilesDict.ContainsKey("h2online.exe"))
         {
@@ -226,7 +231,7 @@ namespace h2online
 
       // If the versions are different then we update TODO: Automate this based on files on update server
       if (_localVersion != _latestVersion || _latestLauncherVersion != _localLauncherVersion || !File.Exists("MF.dll") ||
-          !File.Exists("gungame.ini") || _halo2Version != LatestHalo2Version)
+          !File.Exists("gungame.ini") || _halo2Version != LatestHalo2Version || _localVersion == "0.0.0.0")
       {
         Trace.WriteLine(_halo2Version == "0.0.0.0" ? "Cannot locate halo2.exe" : "You don't have the latest version!");
         return false;
@@ -287,7 +292,7 @@ namespace h2online
         if (!File.Exists("gungame.ini")) // If we don't find gungame.ini
           DownloadFile(UpdateServer + "gungame.ini", "gungame.ini");
 
-        if (_localVersion != _latestVersion) // If our xlive.dll is old update it
+        if (_localVersion != _latestVersion) // If our xlive.dll is old
           DownloadFile(UpdateServer + "xlive.dll", "xlive.dll");
 
         if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
@@ -305,7 +310,8 @@ namespace h2online
 
     private void MetroWindow_Activated(object sender, EventArgs e)
     {
-      ButtonAction.Content = Cfg.CheckIfProcessIsRunning("halo2") ? "Close Game" : "Play"; // Check if halo 2 is running
+      if (Cfg.CheckIfProcessIsRunning("halo2"))// Check if halo 2 is running
+        ButtonAction.Content = "Close Game";
     }
 
     private void CboxDebug_Changed(object sender, RoutedEventArgs e)
