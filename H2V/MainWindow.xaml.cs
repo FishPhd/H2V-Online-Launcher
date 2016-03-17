@@ -19,6 +19,7 @@ namespace h2online
     // Constants
     private const string DebugFileName = "h2vlauncher.log"; // The launchers debug log output
     private const string MainWebsite = "http://www.h2v.online/"; // The project website
+    private const string ProcessName = "halo2"; //the exe name.
 
     // Yes its ugly
     private const string UpdateServer = "https://github.com/FishPhd/H2V-Online-Launcher/releases/download/0.0.0.0/";
@@ -80,7 +81,7 @@ namespace h2online
         // If uid is default generate a new one
         if (Cfg.ConfigFile["profile xuid 1 ="] == "0000000000000000" || Cfg.ConfigFile["profile xuid 1 ="] == "")
         {
-          UidBox.Text = Auth.GenerateUid().ToString(); //Update text box with uid from generate
+          UidBox.Text = Auth.GenerateUid(); //Update text box with uid from generate
           Cfg.SetVariable("profile xuid 1 =", UidBox.Text, ref Cfg.ConfigFile);
           Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
         }
@@ -216,8 +217,8 @@ namespace h2online
         : "0.0.0.0";
 
       // Grab halo2.exe file version number. 
-      _halo2Version = File.Exists(Environment.CurrentDirectory + @"\halo2.exe")
-        ? FileVersionInfo.GetVersionInfo(Environment.CurrentDirectory + @"\halo2.exe").FileVersion
+      _halo2Version = File.Exists(Environment.CurrentDirectory + @"\" + ProcessName + ".exe")
+        ? FileVersionInfo.GetVersionInfo(Environment.CurrentDirectory + @"\" + ProcessName + ".exe").FileVersion
         : "0.0.0.0";
 
       _localLauncherVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(); // Grab launcher version
@@ -261,25 +262,25 @@ namespace h2online
       {
         try
         {
-          if (Cfg.CheckIfProcessIsRunning("halo2")) // Kill halo2 if its running (Should help with black screens)
-            KillProcess("halo2");
-          Process.Start("halo2.exe"); // Good to go! (may need target parameters later)
+            if (Cfg.CheckIfProcessIsRunning(ProcessName)) // Kill halo2 if its running (Should help with black screens)
+                KillProcess(ProcessName);
+          Process.Start(ProcessName + ".exe"); // Good to go! (may need target parameters later)
         }
         catch
         {
-          Trace.WriteLine("Could not locate/open Halo2.exe");
-          TextboxOutput.Text = "Could not locate/open Halo2.exe";
+          Trace.WriteLine("Could not find or launch Halo 2 application.");
+          TextboxOutput.Text = "Could not find or launch Halo 2 application.";
         }
       }
       else if ((string)ButtonAction.Content == "Close Game") // Game is open
       {
-        if (Cfg.CheckIfProcessIsRunning("halo2")) // Might be redundant but we don't want crashes
-          KillProcess("halo2");
+          if (Cfg.CheckIfProcessIsRunning(ProcessName)) // Might be redundant but we don't want crashes
+              KillProcess(ProcessName);
         ButtonAction.Content = "Play";
       }
       else if ((string) ButtonAction.Content == "Update")
       {
-        KillProcess("halo2"); // Kills Halo 2 before updating TODO: add dialog before closing
+          KillProcess(ProcessName); // Kills Halo 2 before updating TODO: add dialog before closing
         ButtonAction.Content = "Updating..."; // Button is still enabled if download is long it might look strange
 
         // TODO: Implement a filelist.txt on server so we can grab needed files (append build number to only grab latest)
@@ -295,8 +296,9 @@ namespace h2online
         if (_localVersion != _latestVersion) // If our xlive.dll is old
           DownloadFile(UpdateServer + "xlive.dll", "xlive.dll");
 
-        if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-          DownloadFile(UpdateServer + "h2online.exe", "h2online.exe");
+          //Never update the launcher.
+        //if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
+          //DownloadFile(UpdateServer + "h2online.exe", "h2online.exe");
 
         //Trace.WriteLine("Files Needed: " + _fileCount);
       }
@@ -310,7 +312,7 @@ namespace h2online
 
     private void MetroWindow_Activated(object sender, EventArgs e)
     {
-      if (Cfg.CheckIfProcessIsRunning("halo2"))// Check if halo 2 is running
+       if (Cfg.CheckIfProcessIsRunning(ProcessName))// Check if halo 2 is running
         ButtonAction.Content = "Close Game";
     }
 
