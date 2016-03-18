@@ -4,13 +4,15 @@ namespace h2online
 {
   public class Auth
   {
-    public static long GenerateUid()
+    public static string GenerateUid()
     {
       //Generate two ints and then append them to create our 16 digit long uid
       var rnd = new Random();
       var uid1 = rnd.Next(10000000, 100000000);
       var uid2 = rnd.Next(10000000, 100000000);
-      return Convert.ToInt64($"{uid1}{uid2}"); // Return the complete uid
+      var uid1string = Convert.ToString(uid1);
+      var uid2string = Convert.ToString(uid2);
+      return uid1string + uid2string; // Return the complete uid
     }
 
     /*
