@@ -332,8 +332,8 @@ namespace h2online
                     DownloadFile(UpdateServer + "xlive.dll", Cfg.InstallPath + "xlive.dll");
 
                 //Never update the launcher.
-                //if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-                //DownloadFile(UpdateServer + "h2online.exe", "h2online.exe");
+                if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
+                DownloadFile(UpdateServer + "h2online.exe", Cfg.InstallPath + "h2online.exe");
 
                 //Trace.WriteLine("Files Needed: " + _fileCount);
             }
