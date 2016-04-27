@@ -264,7 +264,7 @@ namespace h2online
         {
             ProcessStartInfo psi = new ProcessStartInfo(); //Process information container
             psi.WorkingDirectory = Cfg.InstallPath; //Process install path
-            psi.FileName = ProcessStartup + ".exe"; //process start name
+            psi.FileName = ProcessName + ".exe"; //process start name
             psi.Arguments = GameArguments.Text; //Process command parameters
             Process.Start(psi); //starts actual process
         }
