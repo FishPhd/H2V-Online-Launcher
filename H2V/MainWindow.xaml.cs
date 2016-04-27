@@ -331,7 +331,6 @@ namespace h2online
                 if (_localVersion != _latestVersion) // If our xlive.dll is old
                     DownloadFile(UpdateServer + "xlive.dll", Cfg.InstallPath + "xlive.dll");
 
-                //Never update the launcher.
                 if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
                 DownloadFile(UpdateServer + "h2online.exe", Cfg.InstallPath + "h2online.exe");
 
