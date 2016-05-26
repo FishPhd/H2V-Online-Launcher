@@ -9,56 +9,73 @@
   TextElement.Foreground="{DynamicResource MaterialDesignBody}"
   Background="{DynamicResource MaterialDesignPaper}"
   FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-  xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls" Topmost="True"
+  xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
   mc:Ignorable="d" AllowsTransparency="True" WindowStartupLocation="CenterScreen"
-  Title="H2V: Online" Height="260" Width="519.237" Activated="MetroWindow_Activated">
-    <controls:MetroWindow.LeftWindowCommands>
-        <controls:WindowCommands >
-            <Button x:Name="Icon" ToolTip="H2V Online" Click="Icon_Click">
-                <Rectangle Width="30" Height="30"
+  Title="H2V: Online" Height="300" Width="300" Activated="MetroWindow_Activated">
+  <controls:MetroWindow.LeftWindowCommands>
+    <controls:WindowCommands >
+      <Button x:Name="Icon" ToolTip="H2V Online" Click="Icon_Click">
+        <Rectangle Width="30" Height="30"
                    Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                    <Rectangle.OpacityMask>
-                        <VisualBrush Stretch="Uniform"
+          <Rectangle.OpacityMask>
+            <VisualBrush Stretch="Uniform"
                          Visual="{StaticResource Halo2}" />
-                    </Rectangle.OpacityMask>
-                </Rectangle>
-            </Button>
-        </controls:WindowCommands>
-    </controls:MetroWindow.LeftWindowCommands>
-    <Grid>
-        <StackPanel>
-            <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,20,321,0">
-                <Label Content="Name: " FontSize="16" />
-                <TextBox x:Name="PlayerName" TextChanged="PlayerName_TextChanged"
-            		VerticalAlignment="Center" MaxHeight="25" controls:TextBoxHelper.Watermark="Name" Width="115"
-            		ToolTip="Sets your name in game" />
-            </StackPanel>
-            <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,321,0">
-                <Label Content="UID: " FontSize="16" />
-                <TextBox x:Name="UidBox" Text="0000000000000000" IsReadOnly="True" Margin="16,0,0,0" MaxLength="16"
-                 VerticalAlignment="Center" MaxHeight="40" Width="115"
+          </Rectangle.OpacityMask>
+        </Rectangle>
+      </Button>
+    </controls:WindowCommands>
+  </controls:MetroWindow.LeftWindowCommands>
+  <Grid>
+    <StackPanel>
+      <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,20,10,0">
+        <Label Content="Name: " FontSize="16" />
+        <TextBox x:Name="PlayerName" TextChanged="PlayerName_TextChanged"
+                 VerticalAlignment="Center" MaxHeight="25" controls:TextBoxHelper.Watermark="Name" Width="200"
+                 ToolTip="Sets your name in game" />
+      </StackPanel>
+      <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
+        <Label Content="UID: " FontSize="16" />
+        <TextBox x:Name="UidBox" Text="0000000000000000" IsReadOnly="True" Margin="16,0,0,0" MaxLength="16"
+                 VerticalAlignment="Center" MaxHeight="40" Width="200"
                  ToolTip="Unique UID" Foreground="#DDA8A8A8" BorderBrush="#898D8D8D" />
-                <!--<Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
+        
+        <!--<Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
                 VerticalAlignment="Center" Click="BtnGenerate_Click"
                 controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0"
                 BorderBrush="{x:Null}" FontSize="12" />-->
-            </StackPanel>
-            <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,409,0">
-                <!--<Label Content="Hosting: " FontSize="16" Margin="20,0,0,0" />
+      </StackPanel>
+      <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
+        <Label Content="Arguments: " FontSize="16" />
+        <TextBox x:Name="GameArguments" Margin="0,0,0,0" MaxLength="16"
+                 VerticalAlignment="Center" MaxHeight="40" Width="164" TextChanged="GameArguments_TextChanged"
+                 ToolTip="Sets halo2.exe parameters (Don't forget the space)" Foreground="#DDA8A8A8"/>
+        <!--<Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
+                VerticalAlignment="Center" Click="BtnGenerate_Click"
+                controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0"
+                BorderBrush="{x:Null}" FontSize="12" />-->
+      </StackPanel>
+      <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
+        <!--<Label Content="Hosting: " FontSize="16" Margin="20,0,0,0" />
         <CheckBox x:Name="CboxHosting" ToolTip="Are you hosting a server?" Checked="CboxHosting_Changed"
                         Unchecked="CboxHosting_Changed"/>-->
-                <Label Content="Debug:" FontSize="16" Height="31" Width="66" />
-                <CheckBox x:Name="CboxDebug" ToolTip="Display debug console?" Checked="CboxDebug_Changed" Unchecked="CboxDebug_Changed" Margin="0,5,0,0" />
-            </StackPanel>
-            <Button x:Name="ButtonAction" Content="Play" Style="{DynamicResource MaterialDesignRaisedButton}"
+        <Label Content="Debug:" FontSize="16" />
+        <CheckBox x:Name="CboxDebug" ToolTip="Display debug console?" Checked="CboxDebug_Changed" Unchecked="CboxDebug_Changed" Margin="0,5,0,0" />
+      </StackPanel>
+      <Button x:Name="ButtonAction" Content="Play" Style="{DynamicResource MaterialDesignRaisedButton}"
               Height="50" Width="150" Click="ButtonAction_Click" FontSize="16" VerticalAlignment="Top"
-              Margin="182,10,181,0" BorderBrush="{x:Null}" />
-            <TextBlock x:Name="TextboxOutput" Margin="0,5,0,0" Padding="10,5,10,10" Height="27" TextAlignment="Center" />
-        </StackPanel>
-        <controls:MetroProgressBar Foreground="{DynamicResource AccentColorBrush}" Height="15" x:Name="DownloadBar"
+              Margin="0,10,0,0" BorderBrush="{x:Null}" />
+      <TextBlock x:Name="TextboxOutput" Margin="0,5,0,0" Padding="10,5,10,10" Height="27" TextAlignment="Center" />
+    </StackPanel>
+    <controls:MetroProgressBar Foreground="{DynamicResource AccentColorBrush}" Height="15" x:Name="DownloadBar"
                                VerticalAlignment="Bottom" />
-        <TextBox x:Name="GameArguments" Height="22" Margin="338,27,10,182" TextWrapping="Wrap" VerticalAlignment="Center" Width="165" ToolTip="Sets command parameters (don't forget the space)" TextChanged="GameArguments_TextChanged"/>
-        <Label x:Name="label" Content="Arguments:" HorizontalAlignment="Left" Margin="253,24,0,0" VerticalAlignment="Top"/>
 
-    </Grid>
+  </Grid>
 </controls:MetroWindow>
+  <!--
+  <StackPanel VerticalAlignment="Top" Orientation="Horizontal" >
+        <TextBox x:Name="GameArguments" Height="22" TextWrapping="Wrap" VerticalAlignment="Center"
+             Width="165" ToolTip="Sets halo2.exe parameters (Don't forget the space)"
+             TextChanged="GameArguments_TextChanged" />
+        <Label x:Name="label" Content="Arguments:" HorizontalAlignment="Left" Margin="253,24,0,0" VerticalAlignment="Top" />
+      </StackPanel>
+  -->
