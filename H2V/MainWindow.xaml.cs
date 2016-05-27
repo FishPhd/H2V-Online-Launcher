@@ -21,6 +21,7 @@ namespace h2vonline
     #region Constants
 
     private const string DebugFileName = "h2vlauncher.log"; //Launcher debug output
+    private const string CurrentExeName = "h2vonline.exe"; //Launcher debug output
     private const string MainWebsite = "http://www.h2v.online/"; //Project main website
     private const string ProcessName = "halo2"; //Executable name
     private const string ProcessStartup = "startup"; //Startup splash screen
@@ -72,6 +73,8 @@ namespace h2vonline
         ButtonAction.Content = "Verify Install"; //Check if install path exists, and changes verify button
       else
         ButtonAction.Content = !CheckVersion() ? "Update" : "Play"; //Check version and change main button depending
+      Console.WriteLine(@"made it");
+
     }
 
     private void InitiateTrace()
@@ -109,6 +112,8 @@ namespace h2vonline
         ? FileVersionInfo.GetVersionInfo(Cfg.InstallPath + @"\" + ProcessName + ".exe").FileVersion
         : "0.0.0.0"; //Grab halo2.exe file version number. 
       _localLauncherVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(); //Grab launcher version
+      if (File.Exists(Cfg.InstallPath + "h2online.exe")) // If you have the old exe delete it (won't delete versions outside the install location)
+        File.Delete(Cfg.InstallPath + "h2online.exe"); //  If you have the old exe delete it
 
       Trace.WriteLine("Latest h2vonline version: " + _latestVersion);
       Trace.WriteLine("Latest launcher version: " + _latestLauncherVersion);
@@ -126,6 +131,7 @@ namespace h2vonline
         Trace.WriteLine(_halo2Version == "0.0.0.0" ? "Cannot locate halo2.exe" : "You don't have the latest version!");
         return false;
       }
+      
       TextboxOutput.Text = "You have the latest version!";
       Trace.WriteLine("You are up to date!");
       return true; //No update. Have fun!
