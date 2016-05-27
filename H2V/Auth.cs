@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace h2vonline
+namespace h2online
 {
   public class Auth
   {

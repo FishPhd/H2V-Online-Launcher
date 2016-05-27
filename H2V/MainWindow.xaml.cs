@@ -10,7 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using Application = System.Windows.Application;
 
-namespace h2vonline
+namespace h2online
 {
   public partial class MainWindow
   {
@@ -21,7 +21,7 @@ namespace h2vonline
     #region Constants
 
     private const string DebugFileName = "h2vlauncher.log"; //Launcher debug output
-    private const string CurrentExeName = "h2vonline.exe"; //Launcher debug output
+    private const string CurrentExeName = "h2online.exe"; //Launcher debug output
     private const string MainWebsite = "http://www.h2v.online/"; //Project main website
     private const string ProcessName = "halo2"; //Executable name
     private const string ProcessStartup = "startup"; //Startup splash screen
@@ -112,8 +112,6 @@ namespace h2vonline
         ? FileVersionInfo.GetVersionInfo(Cfg.InstallPath + @"\" + ProcessName + ".exe").FileVersion
         : "0.0.0.0"; //Grab halo2.exe file version number. 
       _localLauncherVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(); //Grab launcher version
-      if (File.Exists(Cfg.InstallPath + "h2online.exe")) // If you have the old exe delete it (won't delete versions outside the install location)
-        File.Delete(Cfg.InstallPath + "h2online.exe"); //  If you have the old exe delete it
 
       Trace.WriteLine("Latest h2vonline version: " + _latestVersion);
       Trace.WriteLine("Latest launcher version: " + _latestLauncherVersion);
@@ -251,7 +249,7 @@ namespace h2vonline
             Trace.WriteLine("Could not update Halo 2 Vista.");
           }
         }
-        if (FilesDict.ContainsKey("h2vonline.exe") && _localVersion != _latestVersion)
+        if (FilesDict.ContainsKey("h2online.exe") && _localVersion != _latestVersion)
           //If the launcher was updated we need to restart
         {
           ButtonAction.Content = "Restart";
@@ -259,7 +257,7 @@ namespace h2vonline
           Trace.WriteLine("H2vonline update to " + _latestVersion + " complete");
           TextboxOutput.Text = "Update complete! Please restart.";
         }
-        else if (FilesDict.ContainsKey("h2vonline.exe"))
+        else if (FilesDict.ContainsKey("h2online.exe"))
         {
           ButtonAction.Content = "Restart";
           Trace.WriteLine("Launcher update to " + _latestLauncherVersion + " complete");
@@ -360,7 +358,6 @@ namespace h2vonline
       }
       else if ((string) ButtonAction.Content == "Update")
       {
-        var tmp = Environment.CurrentDirectory; //gets current directory of launcher
         KillProcess(ProcessName); // Kills Halo 2 before updating TODO: add dialog before closing
         ButtonAction.Content = "Updating..."; // Button is still enabled if download is long it might look strange
 
@@ -379,7 +376,7 @@ namespace h2vonline
           DownloadFile(UpdateServer + "xlive.dll", Cfg.InstallPath + "xlive.dll");
 
         if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-          DownloadFile(UpdateServer + "h2vonline.exe", tmp + "h2vonline.exe");
+          DownloadFile(UpdateServer + "h2online.exe", Cfg.InstallPath + "h2online.exe");
 
         Trace.WriteLine("Files Needed: " + _fileCount);
       }

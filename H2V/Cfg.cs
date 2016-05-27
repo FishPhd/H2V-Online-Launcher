@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Win32;
 
-namespace h2vonline
+namespace h2online
 {
   internal static class Cfg
   {
