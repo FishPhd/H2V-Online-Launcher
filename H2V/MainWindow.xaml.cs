@@ -15,13 +15,13 @@ namespace h2online
   public partial class MainWindow
   {
     /*
-        TODO: Add in dsfix or some fps limiter
         TODO: Remove the "=" from the dictionary in cfg -_-
         */
 
     #region Constants
 
     private const string DebugFileName = "h2vlauncher.log"; //Launcher debug output
+    private const string CurrentExeName = "h2online.exe"; //Launcher debug output
     private const string MainWebsite = "http://www.h2v.online/"; //Project main website
     private const string ProcessName = "halo2"; //Executable name
     private const string ProcessStartup = "startup"; //Startup splash screen
@@ -73,6 +73,8 @@ namespace h2online
         ButtonAction.Content = "Verify Install"; //Check if install path exists, and changes verify button
       else
         ButtonAction.Content = !CheckVersion() ? "Update" : "Play"; //Check version and change main button depending
+      Console.WriteLine(@"made it");
+
     }
 
     private void InitiateTrace()
@@ -127,6 +129,7 @@ namespace h2online
         Trace.WriteLine(_halo2Version == "0.0.0.0" ? "Cannot locate halo2.exe" : "You don't have the latest version!");
         return false;
       }
+      
       TextboxOutput.Text = "You have the latest version!";
       Trace.WriteLine("You are up to date!");
       return true; //No update. Have fun!
@@ -144,7 +147,9 @@ namespace h2online
           Cfg.SetVariable("profile xuid 1 =", UidBox.Text, ref Cfg.ConfigFile);
           Cfg.SaveConfigFile(Cfg.InstallPath + "xlive.ini", Cfg.ConfigFile);
         }
-        PlayerName.Text = Cfg.ConfigFile["profile name 1 ="] == " " ? "Player" : Cfg.GetConfigVariable("profile name 1 =", "Player");
+        PlayerName.Text = Cfg.ConfigFile["profile name 1 ="] == " "
+          ? "Player"
+          : Cfg.GetConfigVariable("profile name 1 =", "Player");
         //Set textbox to "Player" for numbering TODO: Halo 2 names
         GameArguments.Text = Cfg.GetConfigVariable("arguments =", " ");
         //Set textbox to load saved command parameters
@@ -179,7 +184,7 @@ namespace h2online
         {
           if (ofd.SafeFileName != null)
             Cfg.InstallPath = ofd.FileName.Replace(ofd.SafeFileName, ""); //removes halo2.exe from file name.
-        } 
+        }
       }
 
       Cfg.SetVariable("install directory =", Cfg.InstallPath, ref Cfg.ConfigFile); //sets variable in config
@@ -296,7 +301,7 @@ namespace h2online
       var psi = new ProcessStartInfo
       {
         WorkingDirectory = Cfg.InstallPath, //Process install path
-        FileName = ProcessName + ".exe",  //process start name
+        FileName = ProcessName + ".exe", //process start name
         Arguments = GameArguments.Text //Process command parameters
       };
       Process.Start(psi); // Start process
@@ -353,7 +358,6 @@ namespace h2online
       }
       else if ((string) ButtonAction.Content == "Update")
       {
-        var tmp = Environment.CurrentDirectory; //gets current directory of launcher
         KillProcess(ProcessName); // Kills Halo 2 before updating TODO: add dialog before closing
         ButtonAction.Content = "Updating..."; // Button is still enabled if download is long it might look strange
 
@@ -372,7 +376,7 @@ namespace h2online
           DownloadFile(UpdateServer + "xlive.dll", Cfg.InstallPath + "xlive.dll");
 
         if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-          DownloadFile(UpdateServer + "h2online.exe", tmp + "/" + "h2online.exe");
+          DownloadFile(UpdateServer + "h2online.exe", Cfg.InstallPath + "h2online.exe");
 
         Trace.WriteLine("Files Needed: " + _fileCount);
       }
