@@ -10,12 +10,11 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using Application = System.Windows.Application;
 
-namespace h2online
+namespace h2vonline
 {
   public partial class MainWindow
   {
     /*
-        TODO: Add in dsfix or some fps limiter
         TODO: Remove the "=" from the dictionary in cfg -_-
         */
 
@@ -144,7 +143,9 @@ namespace h2online
           Cfg.SetVariable("profile xuid 1 =", UidBox.Text, ref Cfg.ConfigFile);
           Cfg.SaveConfigFile(Cfg.InstallPath + "xlive.ini", Cfg.ConfigFile);
         }
-        PlayerName.Text = Cfg.ConfigFile["profile name 1 ="] == " " ? "Player" : Cfg.GetConfigVariable("profile name 1 =", "Player");
+        PlayerName.Text = Cfg.ConfigFile["profile name 1 ="] == " "
+          ? "Player"
+          : Cfg.GetConfigVariable("profile name 1 =", "Player");
         //Set textbox to "Player" for numbering TODO: Halo 2 names
         GameArguments.Text = Cfg.GetConfigVariable("arguments =", " ");
         //Set textbox to load saved command parameters
@@ -179,7 +180,7 @@ namespace h2online
         {
           if (ofd.SafeFileName != null)
             Cfg.InstallPath = ofd.FileName.Replace(ofd.SafeFileName, ""); //removes halo2.exe from file name.
-        } 
+        }
       }
 
       Cfg.SetVariable("install directory =", Cfg.InstallPath, ref Cfg.ConfigFile); //sets variable in config
@@ -296,7 +297,7 @@ namespace h2online
       var psi = new ProcessStartInfo
       {
         WorkingDirectory = Cfg.InstallPath, //Process install path
-        FileName = ProcessName + ".exe",  //process start name
+        FileName = ProcessName + ".exe", //process start name
         Arguments = GameArguments.Text //Process command parameters
       };
       Process.Start(psi); // Start process

@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Win32;
 
-namespace h2online
+namespace h2vonline
 {
   internal static class Cfg
   {
@@ -70,7 +70,7 @@ namespace h2online
       if (!SaveConfigFile(InstallPath + "xlive.ini", ConfigFile)) // If cfg doesn't load return false (error)
       {
         if (File.Exists(InstallPath + "xlive.ini")) // Pretty bad error check
-          File.Delete(InstallPath + "xlive.ini"); 
+          File.Delete(InstallPath + "xlive.ini");
         DefaultSettings(); // Default the settings
         return false; //So user can at least check if the files loaded right
       }

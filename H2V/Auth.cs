@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace h2online
+namespace h2vonline
 {
   public class Auth
   {
@@ -10,9 +10,9 @@ namespace h2online
       var rnd = new Random();
       var uid1 = rnd.Next(10000000, 100000000);
       var uid2 = rnd.Next(10000000, 100000000);
-      var uid1string = Convert.ToString(uid1);
-      var uid2string = Convert.ToString(uid2);
-      return uid1string + uid2string; // Return the complete uid
+      var uid1String = Convert.ToString(uid1);
+      var uid2String = Convert.ToString(uid2);
+      return uid1String + uid2String; // Return the complete uid
     }
 
     /*

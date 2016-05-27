@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace h2online.Properties {
+namespace h2vonline.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
