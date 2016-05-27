@@ -245,7 +245,7 @@ namespace h2vonline
             Trace.WriteLine("Could not update Halo 2 Vista.");
           }
         }
-        if (FilesDict.ContainsKey("h2online.exe") && _localVersion != _latestVersion)
+        if (FilesDict.ContainsKey("h2vonline.exe") && _localVersion != _latestVersion)
           //If the launcher was updated we need to restart
         {
           ButtonAction.Content = "Restart";
@@ -253,7 +253,7 @@ namespace h2vonline
           Trace.WriteLine("H2vonline update to " + _latestVersion + " complete");
           TextboxOutput.Text = "Update complete! Please restart.";
         }
-        else if (FilesDict.ContainsKey("h2online.exe"))
+        else if (FilesDict.ContainsKey("h2vonline.exe"))
         {
           ButtonAction.Content = "Restart";
           Trace.WriteLine("Launcher update to " + _latestLauncherVersion + " complete");
@@ -373,7 +373,7 @@ namespace h2vonline
           DownloadFile(UpdateServer + "xlive.dll", Cfg.InstallPath + "xlive.dll");
 
         if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-          DownloadFile(UpdateServer + "h2online.exe", tmp + "h2online.exe");
+          DownloadFile(UpdateServer + "h2vonline.exe", tmp + "h2vonline.exe");
 
         Trace.WriteLine("Files Needed: " + _fileCount);
       }
