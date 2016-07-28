@@ -6,9 +6,12 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Windows;
+using Ionic.Zip;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using Application = System.Windows.Application;
+using MahApps.Metro.Controls;
+using System.Threading.Tasks;
 
 namespace h2online
 {
@@ -19,10 +22,9 @@ namespace h2online
         */
 
     #region Constants
-
     private const string DebugFileName = "h2vlauncher.log"; //Launcher debug output
     private const string CurrentExeName = "h2online.exe"; //Launcher debug output
-    private const string MainWebsite = "http://www.h2v.online/"; //Project main website
+    private const string MainWebsite = "http://www.cartographer.online/"; //Project main website
     private const string ProcessName = "halo2"; //Executable name
     private const string ProcessStartup = "startup"; //Startup splash screen
     private const string UpdateServer = "https://github.com/FishPhd/H2V-Online-Launcher/releases/download/0.0.0.0/";
@@ -38,9 +40,9 @@ namespace h2online
     private int _fileCount; // # of files to download
     private string _halo2Version = "1.00.00.11122"; // Just assume everyone is up to date unless stated otherwise
     private string _latestLauncherVersion; // the latest version of the launcher
-    private string _latestVersion; // the latest version of h2vonline
+    private string _latestVersion; // the latest version of PC
     private string _localLauncherVersion; // the version of current launcher
-    private string _localVersion; // version of the current h2vonline
+    private string _localVersion; // local version of PC
 
     #endregion
 
@@ -100,7 +102,7 @@ namespace h2online
       var versionLines = new WebClient().DownloadString(UpdateServer + "version.txt")
         .Split(new[] {"\r\n", "\n"}, StringSplitOptions.None); //Grab version number from the URL constant
 
-      _latestVersion = versionLines[0]; //Latest h2vonline version from line 1 of version.txt
+      _latestVersion = versionLines[0]; //Latest PC version from line 1 of version.txt
       _latestLauncherVersion = versionLines[1]; //Latest launcher version from line 2 of version.txt
       _localVersion = File.Exists(Cfg.InstallPath + @"\xlive.dll")
         ? FileVersionInfo.GetVersionInfo(Cfg.InstallPath + @"\xlive.dll").FileVersion
@@ -115,6 +117,9 @@ namespace h2online
       Trace.WriteLine("Local h2vonline version: " + _localVersion);
       Trace.WriteLine("Local launcher version: " + _localLauncherVersion);
       Trace.WriteLine("Halo 2 version: " + _halo2Version);
+
+      LauncherVersionStamp.Content = "Your Launcher Version: " + _localLauncherVersion + " Latest Launcher Version: " + _latestLauncherVersion;
+      PCVersionStamp.Content = "Your PC Version: " + _localVersion + " Latest PC Version: " + _latestVersion;
 
       //If the versions are different then we update TODO: Automate this based on files on update server
       if (_localVersion != _latestVersion || _latestLauncherVersion != _localLauncherVersion ||
@@ -251,7 +256,7 @@ namespace h2online
         {
           ButtonAction.Content = "Restart";
           Trace.WriteLine("Launcher update to " + _latestLauncherVersion + " complete");
-          Trace.WriteLine("H2vonline update to " + _latestVersion + " complete");
+          Trace.WriteLine("Project Cartographer update to " + _latestVersion + " complete");
           TextboxOutput.Text = "Update complete! Please restart.";
         }
         else if (FilesDict.ContainsKey("h2online.exe"))
@@ -264,7 +269,7 @@ namespace h2online
         else
         {
           ButtonAction.Content = "Play";
-          TextboxOutput.Text = "H2vonline update complete!";
+          TextboxOutput.Text = "Project Cartographer update complete!";
         }
       }
     }
@@ -360,18 +365,21 @@ namespace h2online
         ButtonAction.Content = "Updating..."; // Button is still enabled if download is long it might look strange
 
         // TODO: Implement a filelist.txt on server so we can grab needed files (append build number to only grab latest)
-        if (!File.Exists(Cfg.InstallPath + "MF.dll")) // If we don't find mf.dll
-          DownloadFile(UpdateServer + "MF.dll", Cfg.InstallPath + "MF.dll");
+        if (_localVersion != _latestVersion) // If local PC is out of date
+        {
+          string localZip = Cfg.InstallPath + _latestVersion + ".zip";
+          DownloadFile(UpdateServer + _latestVersion + ".zip", localZip);
 
-        if (!File.Exists(Cfg.InstallPath + "h2Update.exe") && _halo2Version != LatestHalo2Version)
-          // If halo2 needs an update
+          //For every file in PC zip extract to install directory
+          using (ZipFile zipToExtract = ZipFile.Read(localZip))
+            foreach (ZipEntry item in zipToExtract)
+              item.Extract(Cfg.InstallPath, ExtractExistingFileAction.OverwriteSilently);
+
+          File.Delete(localZip); // Delete zip file
+        }
+
+        if (!File.Exists(Cfg.InstallPath + "h2Update.exe") && _halo2Version != LatestHalo2Version) // If halo2 needs an update
           DownloadFile(UpdateServer + "h2Update.exe", Cfg.InstallPath + "h2Update.exe");
-
-        if (!File.Exists(Cfg.InstallPath + "gungame.ini")) // If we don't find gungame.ini
-          DownloadFile(UpdateServer + "gungame.ini", Cfg.InstallPath + "gungame.ini");
-
-        if (_localVersion != _latestVersion) // If our xlive.dll is old
-          DownloadFile(UpdateServer + "xlive.dll", Cfg.InstallPath + "xlive.dll");
 
         if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
           DownloadFile(UpdateServer + "h2online.exe", tmp + "/" + "h2online.exe");
@@ -412,18 +420,72 @@ namespace h2online
       Cfg.SaveConfigFile(Cfg.InstallPath + "xlive.ini", Cfg.ConfigFile);
     }
 
-    /*
-        private void CboxHosting_Changed(object sender, RoutedEventArgs e)
-        {
-            if (!IsLoaded) // Don't update cfg while the control loads
-                return;
+    private void ButtonForceUpdate_Click(object sender, RoutedEventArgs e)
+    {
+      FlyoutHandler(LauncherSettingsFlyout); //Close flyout so user can see dl progress
+      string localZip = GetExecutingDirectoryName(); //Set zip to exe directory
+      if (Cfg.InstallPath == string.Empty) //If user has an install path use that location
+        localZip = Cfg.InstallPath + _latestVersion + ".zip";
+      DownloadFile(UpdateServer + _latestVersion + ".zip", localZip);
 
-            // Bools convert "nicely" to 0s and 1s :)
-            Cfg.SetVariable("server =", Convert.ToString(Convert.ToInt32(CboxHosting.IsChecked)), ref Cfg.ConfigFile);
-            Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
-        }
-        */
+      //For every file in PC zip extract to install directory
+      using (ZipFile zipToExtract = ZipFile.Read(localZip))
+        foreach (ZipEntry item in zipToExtract)
+          item.Extract(Cfg.InstallPath, ExtractExistingFileAction.OverwriteSilently);
+
+      File.Delete(localZip); // Delete zip file
+    }
+
+    public static string GetExecutingDirectoryName()
+    {
+      var location = new Uri(Assembly.GetEntryAssembly().GetName().CodeBase);
+      return new FileInfo(location.AbsolutePath).Directory.FullName;
+    }
+
+    /*
+       private void CboxHosting_Changed(object sender, RoutedEventArgs e)
+       {
+           if (!IsLoaded) // Don't update cfg while the control loads
+               return;
+
+           // Bools convert "nicely" to 0s and 1s :)
+           Cfg.SetVariable("server =", Convert.ToString(Convert.ToInt32(CboxHosting.IsChecked)), ref Cfg.ConfigFile);
+           Cfg.SaveConfigFile("xlive.ini", Cfg.ConfigFile);
+       }
+       */
 
     #endregion
+
+    #region Flyouts
+
+    private async void FlyoutHandler(Flyout sender)
+    {
+      await Task.Run(() => AsyncFlyoutHandler(sender));
+    }
+
+    private void AsyncFlyoutHandler(Flyout sender)
+    {
+      Dispatcher.Invoke(() =>
+      {
+        if (sender.IsOpen)
+          sender.IsOpen = false;
+        else
+        {
+          foreach (var fly in AllFlyouts.FindChildren<Flyout>())
+            if (fly.Header != sender.Header)
+              fly.IsOpen = false;
+          sender.IsOpen = true;
+        }
+      });
+    }
+
+    private void LauncherSettings_Click(object sender, RoutedEventArgs e)
+    {
+      FlyoutHandler(LauncherSettingsFlyout);
+    }
+
+    #endregion
+
+    
   }
 }

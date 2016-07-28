@@ -11,10 +11,10 @@
   FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
   xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
   mc:Ignorable="d" AllowsTransparency="True" WindowStartupLocation="CenterScreen"
-  Title="H2V: Online" Height="300" Width="300" Activated="MetroWindow_Activated">
+  Title="Cartographer" Height="240" Width="300" Activated="MetroWindow_Activated">
   <controls:MetroWindow.LeftWindowCommands>
     <controls:WindowCommands>
-      <Button x:Name="Icon" ToolTip="H2V Online" Click="Icon_Click">
+      <Button x:Name="Icon" ToolTip="Project Cartographer Website" Click="Icon_Click">
         <Rectangle Width="30" Height="30"
                    Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
           <Rectangle.OpacityMask>
@@ -25,6 +25,47 @@
       </Button>
     </controls:WindowCommands>
   </controls:MetroWindow.LeftWindowCommands>
+  <controls:MetroWindow.RightWindowCommands>
+    <controls:WindowCommands>
+      <Button ToolTip="Settings" Click="LauncherSettings_Click">
+      <Rectangle Width="15" Height="15"
+                   Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
+        <Rectangle.OpacityMask>
+          <VisualBrush Stretch="Uniform"
+                         Visual="{StaticResource appbar_settings}" />
+        </Rectangle.OpacityMask>
+      </Rectangle>
+    </Button>
+    </controls:WindowCommands>
+  </controls:MetroWindow.RightWindowCommands>
+  <controls:MetroWindow.Flyouts>
+    <controls:FlyoutsControl x:Name="AllFlyouts">
+      <controls:Flyout Header="Advanced" IsPinned="False" Position="Right" Width="300" IsOpen="False"
+                       x:Name="LauncherSettingsFlyout" Theme="Adapt">
+        <StackPanel>
+          <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,0,10,0">
+            <Label Content="Arguments: " FontSize="14" />
+            <TextBox x:Name="GameArguments" Margin="0,0,0,0"
+                 VerticalAlignment="Center" MaxHeight="40" Width="164" TextChanged="GameArguments_TextChanged"
+                 ToolTip="Sets halo2.exe parameters (Don't forget the space)" Foreground="#DDA8A8A8" />
+          </StackPanel>
+          <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
+            <!--<Label Content="Hosting: " FontSize="16" Margin="20,0,0,0" />
+        <CheckBox x:Name="CboxHosting" ToolTip="Are you hosting a server?" Checked="CboxHosting_Changed"
+                        Unchecked="CboxHosting_Changed"/>-->
+            <Label Content="Debug:" FontSize="14" />
+            <CheckBox x:Name="CboxDebug" ToolTip="Display debug console?" Checked="CboxDebug_Changed"
+                  Unchecked="CboxDebug_Changed" Margin="0,5,0,0" />
+          </StackPanel>
+          <Label HorizontalAlignment="Center" x:Name="LauncherVersionStamp">Checking...</Label>
+          <Label HorizontalAlignment="Center" x:Name="PCVersionStamp">Checking...</Label>
+          <Button x:Name="ButtonForceUpdate" Content="Force Update" Style="{DynamicResource MaterialDesignRaisedButton}"
+              Height="35" Width="120" Click="ButtonForceUpdate_Click" FontSize="14" VerticalAlignment="Top"
+              Margin="0,5,0,0" BorderBrush="{x:Null}" />
+        </StackPanel>
+      </controls:Flyout>
+    </controls:FlyoutsControl>
+  </controls:MetroWindow.Flyouts>
   <Grid>
     <StackPanel>
       <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,20,10,0">
@@ -38,38 +79,22 @@
         <TextBox x:Name="UidBox" Text="0000000000000000" IsReadOnly="True" Margin="16,0,0,0" MaxLength="16"
                  VerticalAlignment="Center" MaxHeight="40" Width="200"
                  ToolTip="Unique UID" Foreground="#DDA8A8A8" BorderBrush="#898D8D8D" />
-
         <!--<Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
                 VerticalAlignment="Center" Click="BtnGenerate_Click"
                 controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0"
                 BorderBrush="{x:Null}" FontSize="12" />-->
-      </StackPanel>
-      <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
-        <Label Content="Arguments: " FontSize="14" />
-        <TextBox x:Name="GameArguments" Margin="0,0,0,0"
-                 VerticalAlignment="Center" MaxHeight="40" Width="164" TextChanged="GameArguments_TextChanged"
-                 ToolTip="Sets halo2.exe parameters (Don't forget the space)" Foreground="#DDA8A8A8" />
         <!--<Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
                 VerticalAlignment="Center" Click="BtnGenerate_Click"
                 controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0"
                 BorderBrush="{x:Null}" FontSize="12" />-->
-      </StackPanel>
-      <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
-        <!--<Label Content="Hosting: " FontSize="16" Margin="20,0,0,0" />
-        <CheckBox x:Name="CboxHosting" ToolTip="Are you hosting a server?" Checked="CboxHosting_Changed"
-                        Unchecked="CboxHosting_Changed"/>-->
-        <Label Content="Debug:" FontSize="14" />
-        <CheckBox x:Name="CboxDebug" ToolTip="Display debug console?" Checked="CboxDebug_Changed"
-                  Unchecked="CboxDebug_Changed" Margin="0,5,0,0" />
       </StackPanel>
       <Button x:Name="ButtonAction" Content="Play" Style="{DynamicResource MaterialDesignRaisedButton}"
               Height="50" Width="150" Click="ButtonAction_Click" FontSize="16" VerticalAlignment="Top"
-              Margin="0,10,0,0" BorderBrush="{x:Null}" />
+              Margin="0,20,0,0" BorderBrush="{x:Null}" />
       <TextBlock x:Name="TextboxOutput" Margin="0,5,0,0" Padding="10,5,10,10" Height="27" TextAlignment="Center" />
     </StackPanel>
     <controls:MetroProgressBar Foreground="{DynamicResource AccentColorBrush}" Height="15" x:Name="DownloadBar"
                                VerticalAlignment="Bottom" />
-
   </Grid>
 </controls:MetroWindow>
 <!--
