@@ -89,7 +89,7 @@
                 BorderBrush="{x:Null}" FontSize="12" />-->
       </StackPanel>
       <Button x:Name="ButtonAction" Content="Play" Style="{DynamicResource MaterialDesignRaisedButton}"
-              Height="50" Width="150" Click="ButtonAction_Click" FontSize="16" VerticalAlignment="Top"
+              Height="50" Width="150" Click="ButtonAction_Click" FontSize="14" VerticalAlignment="Top"
               Margin="0,20,0,0" BorderBrush="{x:Null}" />
       <TextBlock x:Name="TextboxOutput" Margin="0,5,0,0" Padding="10,5,10,10" Height="27" TextAlignment="Center" />
     </StackPanel>

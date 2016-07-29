@@ -71,9 +71,15 @@ namespace h2online
         Trace.WriteLine("Config values failed to load. Resetting...");
       }
       if (Cfg.InstallPath == null)
+      {
         ButtonAction.Content = "Verify Install"; //Check if install path exists, and changes verify button
+        CheckVersion();
+      }
       else
+      {
+        ButtonAction.Content = "Checking Version..."; //So people know what its doing
         ButtonAction.Content = !CheckVersion() ? "Update" : "Play"; //Check version and change main button depending
+      }
     }
 
     private void InitiateTrace()
@@ -98,7 +104,6 @@ namespace h2online
 
     private bool CheckVersion()
     {
-      ButtonAction.Content = "Checking Version..."; //So people know what its doing
       var versionLines = new WebClient().DownloadString(UpdateServer + "version.txt")
         .Split(new[] {"\r\n", "\n"}, StringSplitOptions.None); //Grab version number from the URL constant
 
@@ -118,13 +123,11 @@ namespace h2online
       Trace.WriteLine("Local launcher version: " + _localLauncherVersion);
       Trace.WriteLine("Halo 2 version: " + _halo2Version);
 
-      LauncherVersionStamp.Content = "Your Launcher Version: " + _localLauncherVersion + " Latest Launcher Version: " + _latestLauncherVersion;
-      PCVersionStamp.Content = "Your PC Version: " + _localVersion + " Latest PC Version: " + _latestVersion;
+      LauncherVersionStamp.Content = "Launcher: " + _localLauncherVersion + " Latest Launcher " + _latestLauncherVersion;
+      PCVersionStamp.Content = "PC: " + _localVersion + " Latest PC: " + _latestVersion;
 
       //If the versions are different then we update TODO: Automate this based on files on update server
       if (_localVersion != _latestVersion || _latestLauncherVersion != _localLauncherVersion ||
-          !File.Exists(Cfg.InstallPath + "MF.dll") ||
-          !File.Exists(Cfg.InstallPath + "gungame.ini") ||
           _halo2Version != LatestHalo2Version ||
           _localVersion == "0.0.0.0")
       {
@@ -432,17 +435,22 @@ namespace h2online
     private void ButtonForceUpdate_Click(object sender, RoutedEventArgs e)
     {
       FlyoutHandler(LauncherSettingsFlyout); //Close flyout so user can see dl progress
-      string localZip = GetExecutingDirectoryName(); //Set zip to exe directory
+      string localZipLocation = GetExecutingDirectoryName() + @"\"; //Set zip to exe directory
+
+      Trace.WriteLine("Exe directory: " + localZipLocation);
+      Trace.WriteLine("Latest Version: " + _latestVersion);
+
       if (Cfg.InstallPath == string.Empty) //If user has an install path use that location
-        localZip = Cfg.InstallPath + _latestVersion + ".zip";
-      DownloadFile(UpdateServer + _latestVersion + ".zip", localZip);
+        localZipLocation = Cfg.InstallPath;
+
+      DownloadFile(UpdateServer + _latestVersion + ".zip", localZipLocation + _latestVersion + ".zip");
 
       //For every file in PC zip extract to install directory
-      using (ZipFile zipToExtract = ZipFile.Read(localZip))
+      using (ZipFile zipToExtract = ZipFile.Read(localZipLocation + _latestVersion + ".zip"))
         foreach (ZipEntry item in zipToExtract)
-          item.Extract(Cfg.InstallPath, ExtractExistingFileAction.OverwriteSilently);
+          item.Extract(localZipLocation, ExtractExistingFileAction.OverwriteSilently);
 
-      File.Delete(localZip); // Delete zip file
+      File.Delete(localZipLocation + _latestVersion + ".zip"); // Delete zip file
     }
 
     public static string GetExecutingDirectoryName()
