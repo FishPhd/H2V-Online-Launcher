@@ -443,14 +443,7 @@ namespace h2online
       if (Cfg.InstallPath == string.Empty) //If user has an install path use that location
         localZipLocation = Cfg.InstallPath;
 
-      DownloadFile(UpdateServer + _latestVersion + ".zip", localZipLocation + _latestVersion + ".zip");
-
-      //For every file in PC zip extract to install directory
-      using (ZipFile zipToExtract = ZipFile.Read(localZipLocation + _latestVersion + ".zip"))
-        foreach (ZipEntry item in zipToExtract)
-          item.Extract(localZipLocation, ExtractExistingFileAction.OverwriteSilently);
-
-      File.Delete(localZipLocation + _latestVersion + ".zip"); // Delete zip file
+      DownloadFile(UpdateServer + _latestVersion + ".zip", localZipLocation + _latestVersion + ".zip", true, new AsyncCompletedEventHandler(extractZip);
     }
 
     public static string GetExecutingDirectoryName()
