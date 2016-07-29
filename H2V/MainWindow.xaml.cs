@@ -279,6 +279,7 @@ namespace h2online
           TextboxOutput.Text = "Project Cartographer update complete!";
         }
       }
+      FilesDict.Clear();
     }
 
     private void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
@@ -440,10 +441,8 @@ namespace h2online
       Trace.WriteLine("Exe directory: " + localZipLocation);
       Trace.WriteLine("Latest Version: " + _latestVersion);
 
-      if (Cfg.InstallPath == string.Empty) //If user has an install path use that location
-        localZipLocation = Cfg.InstallPath;
-
-      DownloadFile(UpdateServer + _latestVersion + ".zip", localZipLocation + _latestVersion + ".zip", true, new AsyncCompletedEventHandler(extractZip));
+      string localZip = Cfg.InstallPath + _latestVersion + ".zip";
+      DownloadFile(UpdateServer + _latestVersion + ".zip", localZip, true, new AsyncCompletedEventHandler(extractZip));
     }
 
     public static string GetExecutingDirectoryName()
