@@ -200,7 +200,7 @@ namespace h2online
 
     #region Download
 
-    private void DownloadFile(string fileUrl, string fileName, bool downloadProgress = true)
+    private void DownloadFile(string fileUrl, string fileName, bool downloadProgress = true, AsyncCompletedEventHandler onCompleted = null)
     {
       _fileCount++; //One more file to download
       FilesDict.Add(fileName, _fileCount); //Add this file at this count to our dictionary
@@ -221,7 +221,11 @@ namespace h2online
         {
           if (downloadProgress) //If item is supposed to update progressbar
             wc.DownloadProgressChanged += wc_DownloadProgressChanged; //Updates our progressbar
+
           wc.DownloadFileCompleted += wc_DownloadComplete; //This file has finished downloading
+          if (onCompleted != null) {
+            wc.DownloadFileCompleted += onCompleted; //invoke custom handler if there is one
+          } 
           wc.DownloadFileAsync(new Uri(fileUrl), fileName, fileName); //Async downloads our file overload is filename
         }
       }
@@ -322,6 +326,18 @@ namespace h2online
       Process.Start(MainWebsite); //Opens the website :)
     }
 
+    private void extractZip(object sender, AsyncCompletedEventArgs e)
+    {
+      string localZip = Cfg.InstallPath + _latestVersion + ".zip";
+
+      //For every file in PC zip extract to install directory
+      using (ZipFile zipToExtract = ZipFile.Read(localZip))
+        foreach (ZipEntry item in zipToExtract)
+          item.Extract(Cfg.InstallPath, ExtractExistingFileAction.OverwriteSilently);
+
+      File.Delete(localZip); // Delete zip file
+    }
+
     private void ButtonAction_Click(object sender, RoutedEventArgs e)
     {
       if ((string) ButtonAction.Content == "Play")
@@ -368,14 +384,7 @@ namespace h2online
         if (_localVersion != _latestVersion) // If local PC is out of date
         {
           string localZip = Cfg.InstallPath + _latestVersion + ".zip";
-          DownloadFile(UpdateServer + _latestVersion + ".zip", localZip);
-
-          //For every file in PC zip extract to install directory
-          using (ZipFile zipToExtract = ZipFile.Read(localZip))
-            foreach (ZipEntry item in zipToExtract)
-              item.Extract(Cfg.InstallPath, ExtractExistingFileAction.OverwriteSilently);
-
-          File.Delete(localZip); // Delete zip file
+          DownloadFile(UpdateServer + _latestVersion + ".zip", localZip, true, new AsyncCompletedEventHandler(extractZip));
         }
 
         if (!File.Exists(Cfg.InstallPath + "h2Update.exe") && _halo2Version != LatestHalo2Version) // If halo2 needs an update
