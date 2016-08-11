@@ -203,7 +203,7 @@ namespace h2online
 
     #region Download
 
-    private void DownloadFile(string fileUrl, string fileName, bool downloadProgress = true, AsyncCompletedEventHandler onCompleted = null)
+    private void DownloadFile(string fileUrl, string fileName, bool downloadProgress = true, params AsyncCompletedEventHandler[] args)
     {
       _fileCount++; //One more file to download
       FilesDict.Add(fileName, _fileCount); //Add this file at this count to our dictionary
@@ -226,8 +226,11 @@ namespace h2online
             wc.DownloadProgressChanged += wc_DownloadProgressChanged; //Updates our progressbar
 
           wc.DownloadFileCompleted += wc_DownloadComplete; //This file has finished downloading
-          if (onCompleted != null) {
-            wc.DownloadFileCompleted += onCompleted; //invoke custom handler if there is one
+          if (args != null) {
+            foreach (AsyncCompletedEventHandler eventHandler in args)
+            {
+              wc.DownloadFileCompleted += eventHandler; //invoke custom handler if there is one
+            }
           } 
           wc.DownloadFileAsync(new Uri(fileUrl), fileName, fileName); //Async downloads our file overload is filename
         }
@@ -279,7 +282,7 @@ namespace h2online
           TextboxOutput.Text = "Project Cartographer update complete!";
         }
       }
-      FilesDict.Clear();
+      FilesDict.Remove(filename);
     }
 
     private void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
