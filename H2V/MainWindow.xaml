@@ -28,14 +28,14 @@
   <controls:MetroWindow.RightWindowCommands>
     <controls:WindowCommands>
       <Button ToolTip="Settings" Click="LauncherSettings_Click">
-      <Rectangle Width="15" Height="15"
+        <Rectangle Width="15" Height="15"
                    Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-        <Rectangle.OpacityMask>
-          <VisualBrush Stretch="Uniform"
+          <Rectangle.OpacityMask>
+            <VisualBrush Stretch="Uniform"
                          Visual="{StaticResource appbar_settings}" />
-        </Rectangle.OpacityMask>
-      </Rectangle>
-    </Button>
+          </Rectangle.OpacityMask>
+        </Rectangle>
+      </Button>
     </controls:WindowCommands>
   </controls:MetroWindow.RightWindowCommands>
   <controls:MetroWindow.Flyouts>
@@ -46,8 +46,8 @@
           <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,0,10,0">
             <Label Content="Arguments: " FontSize="14" />
             <TextBox x:Name="GameArguments" Margin="0,0,0,0"
-                 VerticalAlignment="Center" MaxHeight="40" Width="164" TextChanged="GameArguments_TextChanged"
-                 ToolTip="Sets halo2.exe parameters (Don't forget the space)" Foreground="#DDA8A8A8" />
+                     VerticalAlignment="Center" MaxHeight="40" Width="164" TextChanged="GameArguments_TextChanged"
+                     ToolTip="Sets halo2.exe parameters (Don't forget the space)" Foreground="#DDA8A8A8" />
           </StackPanel>
           <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
             <!--<Label Content="Hosting: " FontSize="16" Margin="20,0,0,0" />
@@ -55,13 +55,20 @@
                         Unchecked="CboxHosting_Changed"/>-->
             <Label Content="Debug:" FontSize="14" />
             <CheckBox x:Name="CboxDebug" ToolTip="Display debug console?" Checked="CboxDebug_Changed"
-                  Unchecked="CboxDebug_Changed" Margin="0,5,0,0" />
+                      Unchecked="CboxDebug_Changed" Margin="0,5,0,0" />
           </StackPanel>
-          <Label HorizontalAlignment="Center" x:Name="LauncherVersionStamp">Checking...</Label>
-          <Label HorizontalAlignment="Center" x:Name="PCVersionStamp">Checking...</Label>
-          <Button x:Name="ButtonForceUpdate" Content="Force Update" Style="{DynamicResource MaterialDesignRaisedButton}"
-              Height="35" Width="120" Click="ButtonForceUpdate_Click" FontSize="14" VerticalAlignment="Top"
-              Margin="0,5,0,0" BorderBrush="{x:Null}" />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Label  x:Name="LauncherVersionLabel">Launcher:</Label>
+            <Label x:Name="LauncherVersion"></Label>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Label x:Name="PcVersionLabel">Project Cartographer:</Label>
+            <Label x:Name="PcVersion"></Label>
+          </StackPanel>
+          <Button x:Name="ButtonForceUpdate" Content="Force Update"
+                  Style="{DynamicResource MaterialDesignRaisedButton}"
+                  Height="35" Width="120" Click="ButtonForceUpdate_Click" FontSize="14" VerticalAlignment="Top"
+                  Margin="0,5,0,0" BorderBrush="{x:Null}" />
         </StackPanel>
       </controls:Flyout>
     </controls:FlyoutsControl>
@@ -91,10 +98,19 @@
       <Button x:Name="ButtonAction" Content="Play" Style="{DynamicResource MaterialDesignRaisedButton}"
               Height="50" Width="150" Click="ButtonAction_Click" FontSize="14" VerticalAlignment="Top"
               Margin="0,20,0,0" BorderBrush="{x:Null}" />
+      <Grid x:Name="DownloadConfirmGrid" Visibility="Hidden">
+        <Button x:Name="DownloadButton" Content="Download" Click="DownloadButton_Click" Margin="-130,-50,0,0"
+                Style="{DynamicResource MaterialDesignRaisedButton}" Height="50" Width="120" />
+        <Button x:Name="LocateButton" Content="Locate" Click="LocateButton_Click" Margin="130,-50,0,0"
+                Style="{DynamicResource MaterialDesignRaisedButton}" Height="50" Width="120" />
+      </Grid>
+      <Button x:Name="CancelButton" Visibility="Hidden" Content="Cancel" Click="CancelButton_Click"
+              Margin="0,-50,0,0" Style="{DynamicResource MaterialDesignRaisedButton}" Height="50" Width="120" />
+
       <TextBlock x:Name="TextboxOutput" Margin="0,5,0,0" Padding="10,5,10,10" Height="27" TextAlignment="Center" />
     </StackPanel>
     <controls:MetroProgressBar Foreground="{DynamicResource AccentColorBrush}" Height="15" x:Name="DownloadBar"
-                               VerticalAlignment="Bottom" />
+                               VerticalAlignment="Bottom" LargeChange="0" />
   </Grid>
 </controls:MetroWindow>
 <!--
