@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -37,6 +36,7 @@ namespace h2online
     private const string LatestHalo2Version = "1.00.00.11122"; //Latest version of halo2.exe
     private const string Halo2Download = "http://fishphd.tech";
     private const string Halo2DownloadName = "\\halo2.rar";
+    private const double Halo2RarSizeGb = 2.71;
 
     #endregion
 
@@ -494,7 +494,19 @@ namespace h2online
       }
 
       // Downloading
-      await MegaDownload(GetRedirectUrl());
+      try
+      {
+        await MegaDownload(GetRedirectUrl());
+      }
+      catch
+      {
+        TextboxOutput.Text = "Error Downloading Halo 2. Please Restart.";
+        DownloadConfirmGrid.Visibility = Visibility.Hidden;
+        CancelButton.Visibility = Visibility.Hidden;
+        ButtonAction.Visibility = Visibility.Visible;
+        ButtonAction.Content =  "Restart";
+        return;
+      }
 
       // Extracting
       var compressed = ArchiveFactory.Open(Cfg.InstallPath + Halo2DownloadName);
@@ -512,13 +524,19 @@ namespace h2online
       ButtonAction.Content = !CheckVersion() ? "Update" : "Play"; //Check version and change main button depending
       Trace.WriteLine("Halo 2 game installation complete"); //writes to debug file
       TextboxOutput.Text = "Halo 2 downloaded and installed"; //displays what happened
+      DownloadConfirmGrid.Visibility = Visibility.Hidden;
+      ButtonAction.Visibility = Visibility.Visible;
     }
 
     private async Task MegaDownload(string url)
     {
+      MegaApiClient.BufferSize = 16384;
+      MegaApiClient.ReportProgressChunkSize = 1200;
       var client = new MegaApiClient();
-      client.LoginAnonymous();
+      //var stream = new CG.Web.MegaApiClient.WebClient();
 
+      client.LoginAnonymous();
+      
       var megaProgress = new Progress<double>(ReportProgress);
 
       if (File.Exists(Cfg.InstallPath + Halo2DownloadName)) // Remove old rar if found
@@ -539,9 +557,9 @@ namespace h2online
 
     private void ReportProgress(double value)
     {
+      double gbLeft = (value/100)*Halo2RarSizeGb;
       DownloadBar.Value = Convert.ToInt32(value);
-      TextboxOutput.Text = "Downloading Halo 2: " + Math.Round(value, 2) + "%";
-      Console.WriteLine(@"Halo 2 Progress: " + Math.Round(value, 2));
+      TextboxOutput.Text = "Downloading Halo 2: "  + Math.Round(gbLeft, 2) + " gb /" + Halo2RarSizeGb + " gb (" + Math.Round(value, 2) + "%)";
     }
 
     private void LocateButton_Click(object sender, RoutedEventArgs e)
