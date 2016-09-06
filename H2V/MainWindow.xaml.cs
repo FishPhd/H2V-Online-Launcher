@@ -16,6 +16,8 @@ using SharpCompress.Archive;
 using SharpCompress.Common;
 using Application = System.Windows.Application;
 using WebClient = System.Net.WebClient;
+using System.Timers;
+using Timer = System.Windows.Forms.Timer;
 
 namespace h2online
 {
@@ -23,6 +25,11 @@ namespace h2online
   {
     /*
         TODO: Remove the "=" from the dictionary in cfg -_-
+
+      Sizes:
+      1: 200
+      2: 240
+      3: 280 
         */
 
     #region Constants
@@ -34,9 +41,8 @@ namespace h2online
     private const string ProcessStartup = "startup"; //Startup splash screen
     private const string UpdateServer = "https://github.com/FishPhd/H2V-Online-Launcher/releases/download/0.0.0.0/";
     private const string LatestHalo2Version = "1.00.00.11122"; //Latest version of halo2.exe
-    private const string Halo2Download = "http://fishphd.tech";
-    private const string Halo2DownloadName = "\\halo2.rar";
-    private const double Halo2RarSizeGb = 2.71;
+    private const string Halo2DownloadName = "\\halo2.rar"; // The name of the halo 2 installation rar
+    private const double Halo2RarSizeGb = 2.71; // Size of the Halo 2 download
 
     #endregion
 
@@ -51,6 +57,8 @@ namespace h2online
     private string _latestVersion; // the latest version of PC
     private string _localLauncherVersion; // the version of current launcher
     private string _localVersion; // local version of PC
+    private Timer _typingTimer = new Timer(); // timer for user typing in username
+    private string _halo2DownloadUrl; // Halo 2 download redirect
 
     #endregion
 
@@ -78,20 +86,32 @@ namespace h2online
         Load();
         Trace.WriteLine("Config values failed to load. Resetting...");
       }
-      if (Cfg.InstallPath == null)
+
+      GetLatestVersion();
+      //string loginAttempt = null;
+      //Login("FishPhdTest", "fuckperma");
+
+      if (Cfg.GetConfigVariable("login_token =", null) == null)
       {
-        //ButtonAction.Content = "Download/Verify"; //Check if install path exists, and changes verify button
-        //CheckInstall();
-        DownloadConfirmGrid.Visibility = Visibility.Visible; // Show download confirm
-        ButtonAction.Visibility = Visibility.Hidden; // Hide action button
-        TextboxOutput.Text = "Halo 2 could not be found. Locate or download?";
+        
       }
-      if (Cfg.InstallPath != null)
+      else
       {
-        if (File.Exists(Cfg.InstallPath + Halo2DownloadName))
-          File.Delete(Cfg.InstallPath + Halo2DownloadName);
-        ButtonAction.Content = "Checking Version..."; //So people know what its doing
-        ButtonAction.Content = !CheckVersion() ? "Update" : "Play"; //Check version and change main button depending
+        if (Cfg.InstallPath == null)
+        {
+          //ButtonAction.Content = "Download/Verify"; //Check if install path exists, and changes verify button
+          //CheckInstall();
+          DownloadConfirmGrid.Visibility = Visibility.Visible; // Show download confirm
+          ButtonAction.Visibility = Visibility.Hidden; // Hide action button
+          TextboxOutput.Text = "Halo 2 could not be found. Locate or download?";
+        }
+        if (Cfg.InstallPath != null)
+        {
+          if (File.Exists(Cfg.InstallPath + Halo2DownloadName))
+            File.Delete(Cfg.InstallPath + Halo2DownloadName);
+          ButtonAction.Content = "Checking Version..."; //So people know what its doing
+          ButtonAction.Content = !CheckVersion() ? "Update" : "Play"; //Check version and change main button depending
+        }
       }
     }
 
@@ -117,11 +137,6 @@ namespace h2online
 
     private bool CheckVersion()
     {
-      var versionLines = new WebClient().DownloadString(UpdateServer + "version.txt")
-        .Split(new[] {"\r\n", "\n"}, StringSplitOptions.None); //Grab version number from the URL constant
-
-      _latestVersion = versionLines[0]; //Latest PC version from line 1 of version.txt
-      _latestLauncherVersion = versionLines[1]; //Latest launcher version from line 2 of version.txt
       _localVersion = File.Exists(Cfg.InstallPath + @"\xlive.dll")
         ? FileVersionInfo.GetVersionInfo(Cfg.InstallPath + @"\xlive.dll").FileVersion
         : "0.0.0.0"; //Grab xlive.dll file version number. File doesn't exist? 0.0.0.0
@@ -166,23 +181,12 @@ namespace h2online
     {
       try
       {
-        //If uid is default generate a new one
-        if (Cfg.ConfigFile["profile xuid 1 ="] == "0000000000000000" || Cfg.ConfigFile["profile xuid 1 ="] == "")
-        {
-          UidBox.Text = Auth.GenerateUid(); // Update text box with uid from generate
-          Cfg.SetVariable("profile xuid 1 =", UidBox.Text, ref Cfg.ConfigFile);
-          Cfg.SaveConfigFile(Cfg.InstallPath + "xlive.ini", Cfg.ConfigFile);
-        }
-        PlayerName.Text = Cfg.ConfigFile["profile name 1 ="] == " "
-          ? "Player"
-          : Cfg.GetConfigVariable("profile name 1 =", "Player");
+        UsernameBox.Text = Cfg.GetConfigVariable("username =", null);
         //Set textbox to "Player" for numbering TODO: Halo 2 names
-        GameArguments.Text = Cfg.GetConfigVariable("arguments =", " ");
+        GameArguments.Text = Cfg.GetConfigVariable("arguments =", "");
         //Set textbox to load saved command parameters
-        CboxDebug.IsChecked = Convert.ToBoolean(Convert.ToInt32(Cfg.GetConfigVariable("debug =", "0")));
-        UidBox.Text = Cfg.GetConfigVariable("profile xuid 1 =", "0000000000000000"); //Uid box text from cfg
-        Trace.WriteLine("UID: " + UidBox.Text); //Write UID
-        Trace.WriteLine("Name: " + PlayerName.Text); //Write Name
+        CboxDebug.IsChecked = Convert.ToBoolean(Convert.ToInt32(Cfg.GetConfigVariable("debug_log =", "0")));
+        Trace.WriteLine("Name: " + UsernameBox.Text); //Write Name
         Trace.WriteLine("Debug: " + CboxDebug.IsChecked); //Write debug selection
         return true;
       }
@@ -329,8 +333,36 @@ namespace h2online
     {
       if (!IsLoaded) // Makes sure that we don't update cfg while the control loads
         return;
-      Cfg.SetVariable("profile name 1 =", PlayerName.Text, ref Cfg.ConfigFile);
+
+      if(!_typingTimer.Enabled)
+      {
+        _typingTimer.Interval = 3000;
+        _typingTimer.Enabled = true;
+        _typingTimer.Tick += _typingTimer_Tick;
+      }
+      else
+      {
+        _typingTimer.Stop();
+        _typingTimer.Start();
+      }
+
+      Cfg.SetVariable("username =", UsernameBox.Text, ref Cfg.ConfigFile);
       Cfg.SaveConfigFile(Cfg.InstallPath + "xlive.ini", Cfg.ConfigFile);
+    }
+
+    private void _typingTimer_Tick(object sender, EventArgs e)
+    {
+      if(Api.UsernameExists(UsernameBox.Text) == "1")
+      {
+        UsernameBox.BorderBrush = Brushes.Green;
+        Application.Current.MainWindow.Height = 240;
+      }
+      else
+      {
+        ButtonAction.Content = "Register";
+        EmailPanel.Visibility = Visibility.Visible;
+        Application.Current.MainWindow.Height = 280;
+      }
     }
 
     private void Icon_Click(object sender, RoutedEventArgs e)
@@ -354,7 +386,18 @@ namespace h2online
       File.Delete(Cfg.InstallPath + Halo2DownloadName); // Delete archive
     }
 
-    private async void ButtonAction_Click(object sender, RoutedEventArgs e)
+    private void GetLatestVersion()
+    {
+      var versionLines = new WebClient().DownloadString(UpdateServer + "version.txt")
+        .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None); //Grab version number from the URL constant
+
+      _latestVersion = versionLines[0]; //Latest PC version from line 1 of version.txt
+      _latestLauncherVersion = versionLines[1]; //Latest launcher version from line 2 of version.txt
+      //_halo2DownloadUrl = versionLines[2]; //Halo 2 download url from line 3 of version.txt
+      _halo2DownloadUrl = "http://FishPhd.tech";
+    }
+
+    private void ButtonAction_Click(object sender, RoutedEventArgs e)
     {
       if ((string) ButtonAction.Content == "Play")
       {
@@ -410,9 +453,9 @@ namespace h2online
 
         Trace.WriteLine("Files Needed: " + _fileCount);
       }
-      else if ((string) ButtonAction.Content == "Pause")
+      else if ((string) ButtonAction.Content == "Login")
       {
-        await Task.Delay(2000);
+        _typingTimer.Stop();
       }
       else if ((string) ButtonAction.Content == "Restart") // Restart
       {
@@ -496,7 +539,7 @@ namespace h2online
       // Downloading
       try
       {
-        await MegaDownload(GetRedirectUrl());
+        await MegaDownload(GetRedirectUrl(_halo2DownloadUrl));
       }
       catch
       {
@@ -545,7 +588,7 @@ namespace h2online
       await client.DownloadFileAsync(new Uri(url), Cfg.InstallPath + Halo2DownloadName, megaProgress);
     }
 
-    private string GetRedirectUrl(string url = Halo2Download)
+    private string GetRedirectUrl(string url)
     {
       var request = (HttpWebRequest) WebRequest.Create(url);
       request.AllowAutoRedirect = false;

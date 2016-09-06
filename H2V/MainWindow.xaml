@@ -11,7 +11,7 @@
   FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
   xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
   mc:Ignorable="d" AllowsTransparency="True" WindowStartupLocation="CenterScreen"
-  Title="Cartographer" Height="240" Width="300" Activated="MetroWindow_Activated">
+  Title="Cartographer" Height="200" Width="300" Activated="MetroWindow_Activated">
   <controls:MetroWindow.LeftWindowCommands>
     <controls:WindowCommands>
       <Button x:Name="Icon" ToolTip="Project Cartographer Website" Click="Icon_Click">
@@ -76,26 +76,24 @@
   <Grid>
     <StackPanel>
       <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,20,10,0">
-        <Label Content="Name: " FontSize="14" />
-        <TextBox x:Name="PlayerName" TextChanged="PlayerName_TextChanged"
-                 VerticalAlignment="Center" MaxHeight="25" controls:TextBoxHelper.Watermark="Name" Width="200"
-                 ToolTip="Sets your name in game" />
+        <Label Content="Username: " FontSize="14" />
+        <TextBox x:Name="UsernameBox" TextChanged="PlayerName_TextChanged"
+                 VerticalAlignment="Center" MaxHeight="25" controls:TextBoxHelper.Watermark="Username" Width="195"
+                 ToolTip="Your account Username" />
       </StackPanel>
-      <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
-        <Label Content="UID: " FontSize="14" />
-        <TextBox x:Name="UidBox" Text="0000000000000000" IsReadOnly="True" Margin="16,0,0,0" MaxLength="16"
-                 VerticalAlignment="Center" MaxHeight="40" Width="200"
-                 ToolTip="Unique UID" Foreground="#DDA8A8A8" BorderBrush="#898D8D8D" />
-        <!--<Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
-                VerticalAlignment="Center" Click="BtnGenerate_Click"
-                controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0"
-                BorderBrush="{x:Null}" FontSize="12" />-->
-        <!--<Button Style="{StaticResource AccentedSquareButtonStyle}" x:Name="BtnGenerate" Content="Generate"
-                VerticalAlignment="Center" Click="BtnGenerate_Click"
-                controls:ButtonHelper.PreserveTextCase="True" Height="30" Width="75" Margin="5,0,0,0"
-                BorderBrush="{x:Null}" FontSize="12" />-->
+      <StackPanel x:Name="PasswordPanel" Visibility="Collapsed" VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
+        <Label Content="Password: " FontSize="14" />
+        <PasswordBox x:Name="PasswordBox" controls:TextBoxHelper.Watermark="Password" Margin="4,0,0,0"
+                 VerticalAlignment="Center" MaxHeight="40" Width="195" controls:PasswordBoxHelper.CapsLockWarningToolTip="true"
+                 ToolTip="Account Password" />
       </StackPanel>
-      <Button x:Name="ButtonAction" Content="Play" Style="{DynamicResource MaterialDesignRaisedButton}"
+      <StackPanel x:Name="EmailPanel" Visibility="Collapsed" VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
+        <Label Content="Email: " FontSize="14" />
+        <TextBox x:Name="EmailBox" controls:TextBoxHelper.Watermark="Email" Margin="29,0,0,0"
+                 VerticalAlignment="Center" MaxHeight="40" Width="195"
+                 ToolTip="Account Email"/>
+      </StackPanel>
+      <Button x:Name="ButtonAction" Content="Login" Style="{DynamicResource MaterialDesignRaisedButton}"
               Height="50" Width="150" Click="ButtonAction_Click" FontSize="14" VerticalAlignment="Top"
               Margin="0,20,0,0" BorderBrush="{x:Null}" />
       <Grid x:Name="DownloadConfirmGrid" Visibility="Hidden">

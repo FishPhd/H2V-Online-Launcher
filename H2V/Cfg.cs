@@ -53,9 +53,8 @@ namespace h2online
     public static string GetConfigVariable(string key, string defaultValue)
     {
       if (ConfigFile.ContainsKey(key))
-      {
         return ConfigFile[key];
-      }
+      
       ConfigFile[key] = defaultValue;
       return defaultValue;
     }
@@ -79,16 +78,12 @@ namespace h2online
 
     public static void DefaultSettings()
     {
-      SetVariable("profile name 1 =", "Player", ref ConfigFile);
-      SetVariable("profile xuid 1 =", "0000000000000000", ref ConfigFile);
-      SetVariable("online profile =", "1", ref ConfigFile);
-      SetVariable("server =", "0", ref ConfigFile);
-      SetVariable("save directory =", "XLiveEmu", ref ConfigFile);
-      SetVariable("debug log =", "0", ref ConfigFile);
-      SetVariable("debug =", "0", ref ConfigFile);
-      SetVariable("altports =", "0", ref ConfigFile);
-      SetVariable("arguments =", "", ref ConfigFile);
-      SetVariable("install directory =", InstallPath, ref ConfigFile);
+      SetVariable("username =", null, ref ConfigFile);
+      SetVariable("login_token =", null, ref ConfigFile);
+      SetVariable("debug_log =", "0", ref ConfigFile);
+      SetVariable("gungame =", "0", ref ConfigFile);
+      SetVariable("arguments =", null, ref ConfigFile);
+
       SaveConfigFile(InstallPath + "xlive.ini", ConfigFile);
     }
 
