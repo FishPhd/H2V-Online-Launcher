@@ -6,6 +6,7 @@
   ShowIconOnTitleBar="True" ResizeMode="CanMinimize"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   GlowBrush="{DynamicResource AccentColorBrush}"
+  BorderThickness="1"
   TextElement.Foreground="{DynamicResource MaterialDesignBody}"
   Background="{DynamicResource MaterialDesignPaper}"
   FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
@@ -49,21 +50,21 @@
                      VerticalAlignment="Center" MaxHeight="40" Width="164" TextChanged="GameArguments_TextChanged"
                      ToolTip="Sets halo2.exe parameters (Don't forget the space)" Foreground="#DDA8A8A8" />
           </StackPanel>
-          <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
-            <!--<Label Content="Hosting: " FontSize="16" Margin="20,0,0,0" />
+          <!--<StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
+            <Label Content="Hosting: " FontSize="16" Margin="20,0,0,0" />
         <CheckBox x:Name="CboxHosting" ToolTip="Are you hosting a server?" Checked="CboxHosting_Changed"
-                        Unchecked="CboxHosting_Changed"/>-->
+                        Unchecked="CboxHosting_Changed"/>
             <Label Content="Debug:" FontSize="14" />
             <CheckBox x:Name="CboxDebug" ToolTip="Display debug console?" Checked="CboxDebug_Changed"
                       Unchecked="CboxDebug_Changed" Margin="0,5,0,0" />
-          </StackPanel>
+          </StackPanel>-->
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Label  x:Name="LauncherVersionLabel">Launcher:</Label>
-            <Label x:Name="LauncherVersion"></Label>
+            <Label x:Name="LauncherVersionLabel">Launcher:</Label>
+            <Label x:Name="LauncherVersion">n/a</Label>
           </StackPanel>
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Label x:Name="PcVersionLabel">Project Cartographer:</Label>
-            <Label x:Name="PcVersion"></Label>
+            <Label x:Name="PcVersion">n/a</Label>
           </StackPanel>
           <Button x:Name="ButtonForceUpdate" Content="Force Update"
                   Style="{DynamicResource MaterialDesignRaisedButton}"
@@ -75,31 +76,37 @@
   </controls:MetroWindow.Flyouts>
   <Grid>
     <StackPanel>
-      <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,20,10,0">
-        <Label Content="Username: " FontSize="14" />
-        <TextBox x:Name="UsernameBox" TextChanged="PlayerName_TextChanged"
-                 VerticalAlignment="Center" MaxHeight="25" controls:TextBoxHelper.Watermark="Username" Width="195"
-                 ToolTip="Your account Username" />
+      <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Margin="10,20,0,0">
+        <Label x:Name="UsernameBoxLabel" Content="Username: " FontSize="14" />
+        <Grid>
+          <TextBlock Margin="0,6,5,6" Text="Case-sensitive" Opacity="0.5"
+                     Visibility="{Binding ElementName=UsernameBox, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+          <TextBox x:Name="UsernameBox" TextChanged="PlayerName_TextChanged" VerticalAlignment="Center" MaxHeight="25"
+                   Width="200" ToolTip="Your account Username" Margin="0,2" />
+        </Grid>
       </StackPanel>
-      <StackPanel x:Name="PasswordPanel" Visibility="Collapsed" VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
+      <StackPanel x:Name="PasswordPanel" Visibility="Collapsed" VerticalAlignment="Top" Orientation="Horizontal"
+                  Margin="10,10,0,0">
         <Label Content="Password: " FontSize="14" />
-        <PasswordBox x:Name="PasswordBox" controls:TextBoxHelper.Watermark="Password" Margin="4,0,0,0"
-                 VerticalAlignment="Center" MaxHeight="40" Width="195" controls:PasswordBoxHelper.CapsLockWarningToolTip="true"
-                 ToolTip="Account Password" />
+        <PasswordBox x:Name="PasswordBox"
+                     VerticalAlignment="Center" MaxHeight="40" Width="180"
+                     controls:PasswordBoxHelper.CapsLockWarningToolTip="true"
+                     ToolTip="Account Password"/>
       </StackPanel>
-      <StackPanel x:Name="EmailPanel" Visibility="Collapsed" VerticalAlignment="Top" Orientation="Horizontal" Margin="10,10,10,0">
+      <StackPanel x:Name="EmailPanel" Visibility="Collapsed" VerticalAlignment="Top" Orientation="Horizontal"
+                  Margin="10,10,0,0">
         <Label Content="Email: " FontSize="14" />
-        <TextBox x:Name="EmailBox" controls:TextBoxHelper.Watermark="Email" Margin="29,0,0,0"
-                 VerticalAlignment="Center" MaxHeight="40" Width="195"
-                 ToolTip="Account Email"/>
+        <TextBox x:Name="EmailBox"
+                 VerticalAlignment="Center" MaxHeight="40" Width="210"
+                 ToolTip="Account Email" />
       </StackPanel>
       <Button x:Name="ButtonAction" Content="Login" Style="{DynamicResource MaterialDesignRaisedButton}"
               Height="50" Width="150" Click="ButtonAction_Click" FontSize="14" VerticalAlignment="Top"
               Margin="0,20,0,0" BorderBrush="{x:Null}" />
       <Grid x:Name="DownloadConfirmGrid" Visibility="Hidden">
-        <Button x:Name="DownloadButton" Content="Download" Click="DownloadButton_Click" Margin="-130,-50,0,0"
-                Style="{DynamicResource MaterialDesignRaisedButton}" Height="50" Width="120" />
-        <Button x:Name="LocateButton" Content="Locate" Click="LocateButton_Click" Margin="130,-50,0,0"
+        <!--<Button x:Name="DownloadButton" Content="Download" Click="DownloadButton_Click" Margin="-130,-50,0,0"
+                Style="{DynamicResource MaterialDesignRaisedButton}" Height="50" Width="120" />-->
+        <Button x:Name="LocateButton" Content="Locate" Click="LocateButton_Click"
                 Style="{DynamicResource MaterialDesignRaisedButton}" Height="50" Width="120" />
       </Grid>
       <Button x:Name="CancelButton" Visibility="Hidden" Content="Cancel" Click="CancelButton_Click"

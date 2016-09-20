@@ -1,136 +1,96 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace h2online
 {
-  class Api
+  internal class Api
   {
     private const string ApiUrl = "http://cartographer.online/api.php"; // Api url for login and registration
 
     public static string Register(string user, string pass, string email)
     {
-      using (var client = new WebClient())
+      var pairs = new List<KeyValuePair<string, string>>
       {
-        var values = new NameValueCollection();
-        values["launcher"] = "1";
-        values["user"] = user;
-        values["pass"] = pass;
-        values["email"] = email;
+        new KeyValuePair<string, string>("launcher", "1"),
+        new KeyValuePair<string, string>("user", user),
+        new KeyValuePair<string, string>("pass", pass),
+        new KeyValuePair<string, string>("email", email)
+      };
 
-        var response = client.UploadValues(ApiUrl, values);
+      var content = new FormUrlEncodedContent(pairs);
 
-        return Encoding.Default.GetString(response);
-      }
-      /*
       using (var client = new HttpClient())
       {
-        var values = new Dictionary<string, string>
-        {
-          {"launcher", "1"},
-          {"user", user},
-          {"pass", pass},
-          {"email",  email}
-        };
-
-        var content = new FormUrlEncodedContent(values);
-        var response = await client.PostAsync("http://cartographer.online/api.php", content);
-
-        var responseString = await response.Content.ReadAsStringAsync();
-
-        return responseString;
+        var response = client.PostAsync(ApiUrl, content).Result;
+        var contentString = response.Content.ReadAsStringAsync().Result;
+        Console.WriteLine(contentString);
+        return contentString;
       }
-      */
     }
 
     public static string UsernameExists(string user)
     {
-      using (var client = new WebClient())
+      var pairs = new List<KeyValuePair<string, string>>
       {
-        var values = new NameValueCollection();
-        values["launcher"] = "1";
-        values["user"] = user;
+        new KeyValuePair<string, string>("launcher", "1"),
+        new KeyValuePair<string, string>("user", user)
+      };
 
-        var response = client.UploadValues(ApiUrl, values);
+      var content = new FormUrlEncodedContent(pairs);
 
-        return Encoding.Default.GetString(response);
-      }
-
-      /*
       using (var client = new HttpClient())
       {
-        var values = new Dictionary<string, string>
-        {
-          {"launcher", "1"},
-          {"user", user}
-        };
-
-        var content = new FormUrlEncodedContent(values);
-        var response = await client.PostAsync("http://cartographer.online/api.php", content);
-
-        var responseString = await response.Content.ReadAsStringAsync();
-
-        return responseString;
+        var response = client.PostAsync(ApiUrl, content).Result;
+        var contentString = response.Content.ReadAsStringAsync().Result;
+        Console.WriteLine(contentString);
+        return contentString;
       }
-      */
     }
 
-    public static string Login(string user, string pass, string token = null, bool usingToken = false)
+    public static string Login(string user, string pass, string token = null)
     {
-      using (var client = new WebClient())
+      var pairs = new List<KeyValuePair<string, string>>
       {
-        var values = new NameValueCollection();
-        values["launcher"] = "1";
+        new KeyValuePair<string, string>("launcher", "1")
+      };
 
-        if (usingToken)
-        {
-          values["token"] = token;
-        }
-        else
-        {
-          values["user"] = user;
-          values["pass"] = pass;
-        }
-
-        var response = client.UploadValues(ApiUrl, values);
-        var responseString = Encoding.Default.GetString(response);
-        Console.WriteLine(responseString);
-        return responseString;
+      if (token != null)
+        pairs.Add(new KeyValuePair<string, string>("token", token));
+      else
+      {
+        pairs.Add(new KeyValuePair<string, string>("user", user));
+        pairs.Add(new KeyValuePair<string, string>("pass", pass));
       }
 
-      /*
+      var content = new FormUrlEncodedContent(pairs);
+
       using (var client = new HttpClient())
       {
-        Dictionary<string, string> values;
-
-        if(usingToken)
-        {
-          values = new Dictionary<string, string>
-          {
-            {"launcher", "1"},
-            {"token", token}
-          };
-        }
-        else
-        {
-          values = new Dictionary<string, string>
-          {
-            {"launcher", "1"},
-            {"user", user},
-            {"pass", pass}
-          };
-        }
-
-        var content = new FormUrlEncodedContent(values);
-
-        var response = await client.PostAsync("http://cartographer.online/api.php", content);
-
-        var responseString = await response.Content.ReadAsStringAsync();
-
-        return responseString;
+        var response = client.PostAsync(ApiUrl, content).Result;
+        var contentString = response.Content.ReadAsStringAsync().Result;
+        Console.WriteLine(contentString);
+        return contentString;
       }
-      */
+    }
+
+    public static bool IsValidEmail(string email)
+    {
+      try
+      {
+        var addr = new System.Net.Mail.MailAddress(email);
+        return addr.Address == email;
+      }
+      catch
+      {
+        return false;
+      }
     }
   }
 }

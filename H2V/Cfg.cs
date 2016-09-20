@@ -50,11 +50,14 @@ namespace h2online
       }
     }
 
-    public static string GetConfigVariable(string key, string defaultValue)
+    public static string GetConfigVariable(string key, string defaultValue, bool setValue = true)
     {
       if (ConfigFile.ContainsKey(key))
         return ConfigFile[key];
-      
+
+      if (!setValue)
+        return null;
+
       ConfigFile[key] = defaultValue;
       return defaultValue;
     }
@@ -78,11 +81,12 @@ namespace h2online
 
     public static void DefaultSettings()
     {
-      SetVariable("username =", null, ref ConfigFile);
+      SetVariable("name =", null, ref ConfigFile);
       SetVariable("login_token =", null, ref ConfigFile);
       SetVariable("debug_log =", "0", ref ConfigFile);
       SetVariable("gungame =", "0", ref ConfigFile);
       SetVariable("arguments =", null, ref ConfigFile);
+      SetVariable("port =", "1000", ref ConfigFile);
 
       SaveConfigFile(InstallPath + "xlive.ini", ConfigFile);
     }
