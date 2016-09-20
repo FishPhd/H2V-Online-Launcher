@@ -103,6 +103,8 @@
       <Button x:Name="ButtonAction" Content="Login" Style="{DynamicResource MaterialDesignRaisedButton}"
               Height="50" Width="150" Click="ButtonAction_Click" FontSize="14" VerticalAlignment="Top"
               Margin="0,20,0,0" BorderBrush="{x:Null}" />
+      <TextBlock x:Name="TextboxOutput" Margin="0,5,0,0" Padding="10,5,10,10" Height="27" TextAlignment="Center" />
+
       <Grid x:Name="DownloadConfirmGrid" Visibility="Hidden">
         <!--<Button x:Name="DownloadButton" Content="Download" Click="DownloadButton_Click" Margin="-130,-50,0,0"
                 Style="{DynamicResource MaterialDesignRaisedButton}" Height="50" Width="120" />-->
@@ -112,7 +114,6 @@
       <Button x:Name="CancelButton" Visibility="Hidden" Content="Cancel" Click="CancelButton_Click"
               Margin="0,-50,0,0" Style="{DynamicResource MaterialDesignRaisedButton}" Height="50" Width="120" />
 
-      <TextBlock x:Name="TextboxOutput" Margin="0,5,0,0" Padding="10,5,10,10" Height="27" TextAlignment="Center" />
     </StackPanel>
     <controls:MetroProgressBar Foreground="{DynamicResource AccentColorBrush}" Height="15" x:Name="DownloadBar"
                                VerticalAlignment="Bottom" LargeChange="0" />

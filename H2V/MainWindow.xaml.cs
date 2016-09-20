@@ -479,7 +479,6 @@ namespace h2online
       }
       else if ((string) ButtonAction.Content == "Update")
       {
-        var tmp = Environment.CurrentDirectory; //gets current directory of launcher
         KillProcess(ProcessName); // Kills Halo 2 before updating TODO: add dialog before closing
         ButtonAction.Content = "Updating..."; // Button is still enabled if download is long it might look strange
 
@@ -495,7 +494,7 @@ namespace h2online
           DownloadFileWc(UpdateServer + "h2Update.exe", Cfg.InstallPath + "h2Update.exe");
 
         if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-          DownloadFileWc(UpdateServer + "h2online.exe", Cfg.InstallPath + "h2online.exe");
+          DownloadFileWc(UpdateServer + "h2online.exe", Environment.CurrentDirectory + "h2online.exe");
 
         Trace.WriteLine("Files Needed: " + _fileCount);
       }
