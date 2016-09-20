@@ -112,7 +112,8 @@ namespace h2online
         {
           if (File.Exists(path))
           {
-            ButtonAction.IsEnabled = false;
+            if (args[1] == "/update")
+              ButtonAction.IsEnabled = false;
             bool unlocked = false;
             int tries = 0;
             while (!unlocked)
