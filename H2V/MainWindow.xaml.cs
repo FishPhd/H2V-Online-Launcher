@@ -105,21 +105,45 @@ namespace h2online
       }
 
       var args = Environment.GetCommandLineArgs();
-      if(args.Length == 3)
+      if (args.Length == 3)
       {
-          var path = args[2];
-          if(args[1] == "/update")
+        var path = args[2];
+        if (args[1] == "/update" || args[1] == "/finishupdate")
+        {
+          if (File.Exists(path))
           {
-              if (File.Exists(path))
-                  File.Delete(path);
-              ButtonAction.IsEnabled = false;
-              DownloadFileWc(UpdateServer + "h2online.exe", path, true, (sender, e) => LaunchApplication(path, "/finishupdate \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\""));
+            ButtonAction.IsEnabled = false;
+            bool unlocked = false;
+            int tries = 0;
+            while (!unlocked)
+            {
+              try
+              {
+                FileStream fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite);
+                unlocked = true;
+                fs.Close();
+              }
+              catch
+              {
+                tries++;
+                if (tries == 50)
+                  break;
+                System.Threading.Thread.Sleep(100);
+              }
+            }
+
+            if (unlocked)
+              File.Delete(path);
+            else
+            {
+              MessageBoxResult result = System.Windows.MessageBox.Show("Auto-Update Failed, Please Manually Update Launcher", "OK", MessageBoxButton.OK);
+              return;
+            }
           }
-          if(args[2] == "/finishupdate")
-          {
-              if (File.Exists(path))
-                  File.Delete(path);
-          }
+
+          if (args[1] == "/update")
+            DownloadFileWc(UpdateServer + "h2online.exe", path, true, (sender, e) => LaunchApplication(path, "/finishupdate \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\""));
+        }
       }
     }
 
