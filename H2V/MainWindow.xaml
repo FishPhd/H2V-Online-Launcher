@@ -91,7 +91,7 @@
         <PasswordBox x:Name="PasswordBox"
                      VerticalAlignment="Center" MaxHeight="40" Width="180"
                      controls:PasswordBoxHelper.CapsLockWarningToolTip="true"
-                     ToolTip="Account Password"/>
+                     ToolTip="Account Password" />
       </StackPanel>
       <StackPanel x:Name="EmailPanel" Visibility="Collapsed" VerticalAlignment="Top" Orientation="Horizontal"
                   Margin="10,10,0,0">

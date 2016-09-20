@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Globalization;
-using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Net.Mail;
 
 namespace h2online
 {
@@ -84,7 +79,7 @@ namespace h2online
     {
       try
       {
-        var addr = new System.Net.Mail.MailAddress(email);
+        var addr = new MailAddress(email);
         return addr.Address == email;
       }
       catch

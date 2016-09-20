@@ -429,18 +429,18 @@ namespace h2online
       if (_localLauncherVersion != null)
       {
         LauncherVersion.Foreground = _localLauncherVersion == _latestLauncherVersion
-        ? new SolidColorBrush(Colors.Lime)
-        : new SolidColorBrush(Colors.OrangeRed);
+          ? new SolidColorBrush(Colors.Lime)
+          : new SolidColorBrush(Colors.OrangeRed);
         LauncherVersion.Content = _localLauncherVersion;
       }
 
       if (_localVersion != null)
       {
         PcVersion.Foreground = _localVersion == _latestVersion
-        ? new SolidColorBrush(Colors.Lime)
-        : new SolidColorBrush(Colors.OrangeRed);
+          ? new SolidColorBrush(Colors.Lime)
+          : new SolidColorBrush(Colors.OrangeRed);
         PcVersion.Content = _localVersion;
-      }      
+      }
     }
 
     private void ButtonAction_Click(object sender, RoutedEventArgs e)
@@ -495,7 +495,7 @@ namespace h2online
           DownloadFileWc(UpdateServer + "h2Update.exe", Cfg.InstallPath + "h2Update.exe");
 
         if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-          DownloadFileWc(UpdateServer + "h2online.exe", tmp + "/" + "h2online.exe");
+          DownloadFileWc(UpdateServer + "h2online.exe", Cfg.InstallPath + "h2online.exe");
 
         Trace.WriteLine("Files Needed: " + _fileCount);
       }
@@ -504,7 +504,7 @@ namespace h2online
         // User Is logging in
         if (PasswordPanel.Visibility == Visibility.Visible)
         {
-          string loginResponse = Api.Login(UsernameBox.Text, PasswordBox.Password);
+          var loginResponse = Api.Login(UsernameBox.Text, PasswordBox.Password);
           if (loginResponse != "0") // Correct login
           {
             Cfg.SetVariable("login_token =", loginResponse, ref Cfg.ConfigFile);
@@ -522,11 +522,11 @@ namespace h2online
       {
         if (Api.IsValidEmail(EmailBox.Text))
         {
-          string registerResponse = Api.Register(UsernameBox.Text, PasswordBox.Password, EmailBox.Text);
+          var registerResponse = Api.Register(UsernameBox.Text, PasswordBox.Password, EmailBox.Text);
 
           if (registerResponse != "0")
           {
-            string loginResponse = Api.Login(UsernameBox.Text, PasswordBox.Password);
+            var loginResponse = Api.Login(UsernameBox.Text, PasswordBox.Password);
 
             PasswordPanel.Visibility = Visibility.Collapsed;
             EmailPanel.Visibility = Visibility.Collapsed;
@@ -549,7 +549,6 @@ namespace h2online
           TextboxOutput.Text = "Invalid Email";
           EmailBox.Text = "";
         }
-        
       }
       else if ((string) ButtonAction.Content == "Restart") // Restart
       {
