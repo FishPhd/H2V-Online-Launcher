@@ -64,6 +64,12 @@ namespace h2online
 
     #region initialize
 
+    void LaunchApplication(string path, string args)
+    {
+        Process.Start(path, args);
+        Application.Current.Shutdown();
+    }
+
     public MainWindow() //Fire to start app opens (look at window_loaded event for finer tuning)
     {
       InitiateTrace(); //Starts our console/debug trace
@@ -96,6 +102,24 @@ namespace h2online
       else if (UsernameBox.Text != "")
       {
         StartTimer();
+      }
+
+      var args = Environment.GetCommandLineArgs();
+      if(args.Length == 3)
+      {
+          var path = args[2];
+          if(args[1] == "/update")
+          {
+              if (File.Exists(path))
+                  File.Delete(path);
+              ButtonAction.IsEnabled = false;
+              DownloadFileWc(UpdateServer + "h2online.exe", path, true, (sender, e) => LaunchApplication(path, "/finishupdate \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\""));
+          }
+          if(args[2] == "/finishupdate")
+          {
+              if (File.Exists(path))
+                  File.Delete(path);
+          }
       }
     }
 
@@ -495,7 +519,18 @@ namespace h2online
           DownloadFileWc(UpdateServer + "h2Update.exe", Cfg.InstallPath + "h2Update.exe");
 
         if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-          DownloadFileWc(UpdateServer + "h2online.exe", tmp + "/" + "h2online.exe");
+        {
+          //Relocate to temp and relaunch with /update param
+          var tmpPath = Path.Combine(Path.GetTempPath(), "h2online.exe");
+          var curPath = Assembly.GetExecutingAssembly().Location;
+
+          if (File.Exists(tmpPath))
+              File.Delete(tmpPath);
+
+          File.Copy(curPath, tmpPath);
+
+          LaunchApplication(tmpPath, "/update \"" + curPath + "\"");
+        }
 
         Trace.WriteLine("Files Needed: " + _fileCount);
       }
