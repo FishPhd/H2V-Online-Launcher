@@ -86,7 +86,7 @@ namespace h2online
                 Load();
                 Trace.WriteLine("Config values failed to load. Resetting...");
             }
-            //GetLatestVersions();
+            GetLatestVersions();
 
             if (Cfg.GetConfigVariable("login_token =", null) != null)
             {
@@ -109,10 +109,8 @@ namespace h2online
                 ButtonAction.Visibility = Visibility.Hidden; // Hide action button
                 TextboxOutput.Text = "Halo 2 could not be found. Locate or download?";
             }
-            if (Cfg.InstallPath != null)
-            {
+            else
                 ButtonAction.Content = !CheckVersion() ? "Update" : "Play"; //Check version and change main button depending
-            }
         }
 
         private void InitiateTrace()
