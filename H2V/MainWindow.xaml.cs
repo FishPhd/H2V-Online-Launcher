@@ -59,34 +59,31 @@ namespace h2online
         private string _halo2DownloadUrl; // Halo 2 download redirect
         private bool _disableHalo2Download;
         public string LauncherDirectory = Environment.CurrentDirectory;
+        private bool force_update = false;
 
         #endregion
 
-        #region initialize
+        #region Initialize
 
         public MainWindow() //Fire to start app opens (look at window_loaded event for finer tuning)
         {
             InitiateTrace(); //Starts our console/debug trace
-                             //CheckInstall(); //Checks if game is installed properly
-            try
-            {
-                InitializeComponent(); //Try to load our pretty wpf
-            }
-            catch
-            {
-                Trace.WriteLine("Failed to load .Net components. Please make sure you have .Net 4.5.2 installed");
-            }
+            try { InitializeComponent(); } //Try to load our pretty wpf 
+            catch { Trace.WriteLine("Failed to load .Net components. Please make sure you have .Net 4.5.2 installed"); }
+
             Trace.WriteLine(Cfg.Initial() ? @"Config loaded" : @"Config Defaulted"); //Grabs settings or defaults them
 
-            if (Load())
-                Trace.WriteLine("Config values loaded");
-            else
+            GetLatestVersions();
+            //CheckInstall(); //Checks if game is installed properly
+
+            if (!Load())
             {
                 Cfg.DefaultSettings();
                 Load();
                 Trace.WriteLine("Config values failed to load. Resetting...");
             }
-            GetLatestVersions();
+            else
+                Trace.WriteLine("Config values loaded");
 
             if (Cfg.GetConfigVariable("login_token =", null) != null)
             {
@@ -94,23 +91,93 @@ namespace h2online
                 Setup();
             }
             else if (UsernameBox.Text != "")
-            {
                 StartTimer();
+        }
+
+        private void GetLatestVersions()
+        {
+            var versionLines = new WebClient().DownloadString(UpdateServer + "version.txt")
+              .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None); //Grab version number from the URL constant
+
+            // Grab latest (line 1) or dev build (line 2) 
+            if (Cfg.GetConfigVariable("dev_build =", null, false) != "1")
+                _latestVersion = versionLines[0];
+            else
+                _latestVersion = versionLines[2] + "-Beta";
+
+            _latestLauncherVersion = versionLines[1]; //Latest launcher version from line 2 of version.txt
+
+            //if (versionLines.Length == 3)
+            //    _disableHalo2Download = true;
+            //else
+            //    _halo2DownloadUrl = versionLines[3]; //Halo 2 download url from line 3 of version.txt
+
+            //Grab xlive.dll file version number. File doesn't exist? 0.0.0.0
+            _localVersion = File.Exists(Cfg.InstallPath + @"\xlive.dll")
+                ? FileVersionInfo.GetVersionInfo(Cfg.InstallPath + @"\xlive.dll").FileVersion
+                : "0.0.0.0";
+            //Grab halo2.exe file version number. 
+            _halo2Version = File.Exists(Cfg.InstallPath + @"\" + ProcessName + ".exe")
+                ? FileVersionInfo.GetVersionInfo(Cfg.InstallPath + @"\" + ProcessName + ".exe").FileVersion
+                : "0.0.0.0";
+            _localLauncherVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(); //Grab launcher version
+
+            Trace.WriteLine("Latest h2vonline: " + _latestVersion);
+            Trace.WriteLine("Latest launcher: " + _latestLauncherVersion);
+            Trace.WriteLine("Local h2vonline: " + _localVersion);
+            Trace.WriteLine("Local launcher: " + _localLauncherVersion);
+            Trace.WriteLine("Halo 2: " + _halo2Version);
+            Trace.WriteLine(Cfg.InstallPath + @"\" + ProcessName + ".exe");
+
+            if (_localLauncherVersion != null)
+            {
+                LauncherVersion.Foreground = _localLauncherVersion == _latestLauncherVersion
+                  ? new SolidColorBrush(Colors.Lime)
+                  : new SolidColorBrush(Colors.OrangeRed);
+                LauncherVersion.Content = _localLauncherVersion;
             }
+
+            if (_localVersion != null)
+            {
+                PcVersion.Foreground = _localVersion == _latestVersion
+                  ? new SolidColorBrush(Colors.Lime)
+                  : new SolidColorBrush(Colors.OrangeRed);
+                PcVersion.Content = _localVersion;
+            }
+        }
+
+        private bool Load()
+        //TODO: Databind this
+        {
+            try
+            {
+                UsernameBox.Text = Cfg.GetConfigVariable("name =", null);
+                GameArguments.Text = Cfg.GetConfigVariable("arguments =", "");
+                //CboxDebug.IsChecked = Convert.ToBoolean(Convert.ToInt32(Cfg.GetConfigVariable("debug_log =", "0")));
+                Trace.WriteLine("Name: " + UsernameBox.Text); //Write Name
+                //Trace.WriteLine("Debug: " + CboxDebug.IsChecked); //Write debug selection
+                return true;
+            }
+            catch { return false; }
         }
 
         private void Setup()
         {
             if (Cfg.InstallPath == null)
             {
-                //ButtonAction.Content = "Download/Verify"; //Check if install path exists, and changes verify button
+                ButtonAction.Content = "Verify";
+                TextboxOutput.Text = "Please verify game installation.";
                 //CheckInstall();
-                DownloadConfirmGrid.Visibility = Visibility.Visible; // Show download confirm
-                ButtonAction.Visibility = Visibility.Hidden; // Hide action button
-                TextboxOutput.Text = "Halo 2 could not be found. Locate or download?";
+                //DownloadConfirmGrid.Visibility = Visibility.Visible; // Show download confirm
+                //ButtonAction.Visibility = Visibility.Hidden; // Hide action button
+                //TextboxOutput.Text = "Halo 2 could not be found. Locate or download?";
             }
             else
-                ButtonAction.Content = !CheckVersion() ? "Update" : "Play"; //Check version and change main button depending
+            {
+                ButtonAction.Content = (!CheckVersion() ? "Update" : "Play"); //Check version and change main button depending
+                TextboxOutput.Text = "Game installation verified.";
+                
+            }
         }
 
         private void InitiateTrace()
@@ -159,36 +226,88 @@ namespace h2online
             return true; //No update. Have fun!
         }
 
-        //TODO: Databind this
-        private bool Load()
+        private void DownloadUpdate()
         {
-            try
+            // TODO: Implement a filelist.txt on server so we can grab needed files (append build number to only grab latest)
+            if (_localVersion != _latestVersion)
             {
-                UsernameBox.Text = Cfg.GetConfigVariable("name =", null);
-                //Set textbox to "Player" for numbering TODO: Halo 2 names
-                GameArguments.Text = Cfg.GetConfigVariable("arguments =", "");
-                //Set textbox to load saved command parameters
-                //CboxDebug.IsChecked = Convert.ToBoolean(Convert.ToInt32(Cfg.GetConfigVariable("debug_log =", "0")));
-                Trace.WriteLine("Name: " + UsernameBox.Text); //Write Name
-                                                              //Trace.WriteLine("Debug: " + CboxDebug.IsChecked); //Write debug selection
-                return true;
+                var localZip = Cfg.InstallPath + _latestVersion + ".zip";
+                DownloadFileWc(UpdateServer + _latestVersion + ".zip", localZip, true, ExtractArchive);
             }
-            catch
+
+            if (!File.Exists(Cfg.InstallPath + "h2Update.exe") && _halo2Version != LatestHalo2Version)
+                DownloadFileWc(UpdateServer + "h2Update.exe", Cfg.InstallPath + "h2Update.exe");
+
+            if (_latestLauncherVersion != _localLauncherVersion || force_update == true)
+                DownloadFileWc(UpdateServer + "h2online.exe", "h2online_temp.exe");
+
+            Trace.WriteLine("Files Needed: " + _fileCount);
+        }
+
+        private void PathFinder()
+        {
+            if (!IsLoaded) //Don't update cfg while the control loads
+                return;
+
+            using (System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog()) //Creates a file dialog window
             {
-                return false;
+                ofd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //sets default location in dialog window
+                ofd.Title = "Navigate to Halo 2 Install Path"; //gives it a title
+                ofd.Filter = "Halo 2 Executable|halo2.exe"; //filters out unncecessary files
+                ofd.FilterIndex = 1; //allows only 1 filter index
+                if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK) //if chosen it will set the file path to the install path
+                {
+                    Cfg.InstallPath = ofd.FileName.Replace(ofd.SafeFileName, ""); //removes halo2.exe from file name.
+                    TextboxOutput.Text = "Game installation verified."; //displays what happened
+                    Cfg.SetVariable("install_path =", Cfg.InstallPath, ref Cfg.ConfigFile); //sets variable in config
+                    Cfg.SaveConfigFile(Cfg.InstallPath + "xlive.ini", Cfg.ConfigFile); //saves config
+                    GetLatestVersions();
+                    Setup();
+                }
+                Trace.WriteLine("Halo 2 game installation was detected."); //writes to debug file
+                
             }
         }
 
-        /*
-        private void CheckInstall()
-        {
-          if (!IsLoaded) //Don't update cfg while the control loads
-            return;
-          DownloadConfirmGrid.Visibility = Visibility.Visible; // Show download confirm
-          ButtonAction.Visibility = Visibility.Hidden; // Hide action button
-        }
-        */
+        //private void CheckInstall()
+        //{
+        //  if (!IsLoaded) //Don't update cfg while the control loads
+        //    return;
+        //  DownloadConfirmGrid.Visibility = Visibility.Visible; // Show download confirm
+        //  ButtonAction.Visibility = Visibility.Hidden; // Hide action button
+        //}
 
+        private void KillProcess(string name)
+        {
+            foreach (var process in Process.GetProcessesByName(name))
+            {
+                process.Kill();
+                process.WaitForExit(); //Wait for process to end in case we want to do stuff with active files
+                Trace.WriteLine(name + " process killed");
+            }
+        }
+
+        private void StartProcess(string name)
+        {
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            var psi = new ProcessStartInfo
+            {
+                WorkingDirectory = Cfg.InstallPath, //Process install path
+                FileName = ProcessName + ".exe", //process start name
+                Arguments = GameArguments.Text //Process command parameters
+            };
+            Process.Start(psi); // Start process
+        }
+
+        public static string GetExecutingDirectoryName()
+        {
+            var location = new Uri(Assembly.GetEntryAssembly().GetName().CodeBase);
+            var directoryInfo = new FileInfo(location.AbsolutePath).Directory;
+            if (directoryInfo != null)
+                return directoryInfo.FullName;
+            Trace.WriteLine("Directory name could not be found");
+            return null;
+        }
         #endregion
 
         #region Download/File Handling
@@ -253,7 +372,7 @@ namespace h2online
                         Trace.WriteLine("Could not update Halo 2 Vista.");
                     }
                 }
-                if (FilesDict.ContainsKey("h2online_temp.exe") && _localLauncherVersion != _latestLauncherVersion)
+                if (FilesDict.ContainsKey("h2online_temp.exe") && _localLauncherVersion != _latestLauncherVersion || force_update == true)
                 //If the launcher was updated we need to restart
                 {
                     LauncherVersion.Content = _latestLauncherVersion;
@@ -265,6 +384,7 @@ namespace h2online
                 {
                     PcVersion.Content = _latestVersion;
                     TextboxOutput.Text = "Project Cartographer update complete!";
+                    force_update = false;
                 }
             }
             FilesDict.Remove(filename);
@@ -273,37 +393,15 @@ namespace h2online
         private void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             DownloadBar.Value = e.ProgressPercentage; // Updates our download bar percentage
-                                                      /*
-                                                            if (e.ProgressPercentage != 100 && e.ProgressPercentage % 2 != 0)
-                                                                Trace.Write(e.ProgressPercentage + " ");
-                                                            */
+
+            //if (e.ProgressPercentage != 100 && e.ProgressPercentage % 2 != 0)
+            //    Trace.Write(e.ProgressPercentage + " ");
+
         }
 
         #endregion
 
         #region Events
-
-        private void KillProcess(string name)
-        {
-            foreach (var process in Process.GetProcessesByName(name))
-            {
-                process.Kill();
-                process.WaitForExit(); //Wait for process to end in case we want to do stuff with active files
-                Trace.WriteLine(name + " process killed");
-            }
-        }
-
-        private void StartProcess(string name)
-        {
-            if (name == null) throw new ArgumentNullException(nameof(name));
-            var psi = new ProcessStartInfo
-            {
-                WorkingDirectory = Cfg.InstallPath, //Process install path
-                FileName = ProcessName + ".exe", //process start name
-                Arguments = GameArguments.Text //Process command parameters
-            };
-            Process.Start(psi); // Start process
-        }
 
         private void PlayerName_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -380,57 +478,6 @@ namespace h2online
             File.Delete(localZip); // Delete archive
         }
 
-        private void GetLatestVersions()
-        {
-            var versionLines = new WebClient().DownloadString(UpdateServer + "version.txt")
-              .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None); //Grab version number from the URL constant
-
-            // Grab latest (line 1) or dev build (line 2) 
-            if (Cfg.GetConfigVariable("dev_build =", null, false) != "1")
-                _latestVersion = versionLines[0];
-            else
-                _latestVersion = versionLines[2] + "-Beta";
-
-            _latestLauncherVersion = versionLines[1]; //Latest launcher version from line 2 of version.txt
-                                                      /*
-                                                      if (versionLines.Length == 3)
-                                                        _disableHalo2Download = true;
-                                                      else
-                                                        _halo2DownloadUrl = versionLines[3]; //Halo 2 download url from line 3 of version.txt
-                                                        */
-
-            _localVersion = File.Exists(Cfg.InstallPath + @"\xlive.dll")
-              ? FileVersionInfo.GetVersionInfo(Cfg.InstallPath + @"\xlive.dll").FileVersion
-              : "0.0.0.0"; //Grab xlive.dll file version number. File doesn't exist? 0.0.0.0
-            _halo2Version = File.Exists(Cfg.InstallPath + @"\" + ProcessName + ".exe")
-              ? FileVersionInfo.GetVersionInfo(Cfg.InstallPath + @"\" + ProcessName + ".exe").FileVersion
-              : "0.0.0.0"; //Grab halo2.exe file version number. 
-            _localLauncherVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(); //Grab launcher version
-
-            Trace.WriteLine("Latest h2vonline: " + _latestVersion);
-            Trace.WriteLine("Latest launcher: " + _latestLauncherVersion);
-            Trace.WriteLine("Local h2vonline: " + _localVersion);
-            Trace.WriteLine("Local launcher: " + _localLauncherVersion);
-            Trace.WriteLine("Halo 2: " + _halo2Version);
-            Trace.WriteLine(Cfg.InstallPath + @"\" + ProcessName + ".exe");
-
-            if (_localLauncherVersion != null)
-            {
-                LauncherVersion.Foreground = _localLauncherVersion == _latestLauncherVersion
-                  ? new SolidColorBrush(Colors.Lime)
-                  : new SolidColorBrush(Colors.OrangeRed);
-                LauncherVersion.Content = _localLauncherVersion;
-            }
-
-            if (_localVersion != null)
-            {
-                PcVersion.Foreground = _localVersion == _latestVersion
-                  ? new SolidColorBrush(Colors.Lime)
-                  : new SolidColorBrush(Colors.OrangeRed);
-                PcVersion.Content = _localVersion;
-            }
-        }
-
         private void ButtonAction_Click(object sender, RoutedEventArgs e)
         {
             if ((string)ButtonAction.Content == "Play")
@@ -467,24 +514,13 @@ namespace h2online
             }
             else if ((string)ButtonAction.Content == "Update")
             {
-                KillProcess(ProcessName); // Kills Halo 2 before updating TODO: add dialog before closing
-                ButtonAction.Content = "Updating..."; // Button is still enabled if download is long it might look strange
-
-                // TODO: Implement a filelist.txt on server so we can grab needed files (append build number to only grab latest)
-                if (_localVersion != _latestVersion) // If local PC is out of date
+                if (Cfg.CheckIfProcessIsRunning(ProcessName) || Cfg.CheckIfProcessIsRunning(ProcessStartup))
                 {
-                    var localZip = Cfg.InstallPath + _latestVersion + ".zip";
-                    DownloadFileWc(UpdateServer + _latestVersion + ".zip", localZip, true, ExtractArchive);
+                    KillProcess(ProcessName);
+                    KillProcess(ProcessStartup);
                 }
-
-                if (!File.Exists(Cfg.InstallPath + "h2Update.exe") && _halo2Version != LatestHalo2Version)
-                    // If halo2 needs an update
-                    DownloadFileWc(UpdateServer + "h2Update.exe", Cfg.InstallPath + "h2Update.exe");
-
-                if (_latestLauncherVersion != _localLauncherVersion) // If our launcher is old update
-                    DownloadFileWc(UpdateServer + "h2online.exe", "h2online_temp.exe");
-
-                Trace.WriteLine("Files Needed: " + _fileCount);
+                    ButtonAction.Content = "Updating..."; // Button is still enabled if download is long it might look strange
+                DownloadUpdate();
             }
             else if ((string)ButtonAction.Content == "Login")
             {
@@ -537,6 +573,10 @@ namespace h2online
                     EmailBox.Text = "";
                 }
             }
+            else if ((string)ButtonAction.Content == "Verify")
+            {
+                PathFinder();
+            }
             else if ((string)ButtonAction.Content == "Restart") // Restart
             {
                 //DO NOT TOUCH THIS
@@ -560,7 +600,6 @@ namespace h2online
         private void MetroWindow_Activated(object sender, EventArgs e)
         {
             if (Cfg.CheckIfProcessIsRunning(ProcessName) || Cfg.CheckIfProcessIsRunning(ProcessStartup))
-                // Check if halo 2 is running
                 ButtonAction.Content = "Close Game";
         }
 
@@ -587,24 +626,14 @@ namespace h2online
 
         private void ButtonForceUpdate_Click(object sender, RoutedEventArgs e)
         {
+            force_update = true;
             FlyoutHandler(LauncherSettingsFlyout); //Close flyout so user can see dl progress
-            var localZipLocation = GetExecutingDirectoryName() + @"\"; //Set zip to exe directory
-
-            Trace.WriteLine("Exe directory: " + localZipLocation);
+            DownloadUpdate();
+            Trace.WriteLine("Exe directory: " + Cfg.InstallPath);
             Trace.WriteLine("Latest Version: " + _latestVersion);
-
-            var localZip = Cfg.InstallPath + _latestVersion + ".zip";
-            DownloadFileWc(UpdateServer + _latestVersion + ".zip", localZip, true, ExtractArchive);
-        }
-
-        public static string GetExecutingDirectoryName()
-        {
-            var location = new Uri(Assembly.GetEntryAssembly().GetName().CodeBase);
-            var directoryInfo = new FileInfo(location.AbsolutePath).Directory;
-            if (directoryInfo != null)
-                return directoryInfo.FullName;
-            Trace.WriteLine("Directory name could not be found");
-            return null;
+            ButtonAction.Content = "Updating...";
+            if (TextboxOutput.Text == "Project Cartographer update complete!")
+                ButtonAction.Content = "Restart";
         }
 
         private async void DownloadButton_Click(object sender, RoutedEventArgs e)
@@ -629,7 +658,7 @@ namespace h2online
                 {
                     Cfg.InstallPath = folderBrowser.SelectedPath;
                     Trace.WriteLine("Halo 2 install path selected: " + Cfg.InstallPath); //writes to debug file
-                    Cfg.SetVariable("install directory =", Cfg.InstallPath, ref Cfg.ConfigFile); //sets variable in config
+                    Cfg.SetVariable("install_path =", Cfg.InstallPath, ref Cfg.ConfigFile); //sets variable in config
                     Cfg.SaveConfigFile(Cfg.InstallPath + "xlive.ini", Cfg.ConfigFile); //saves config
                 }
                 else
